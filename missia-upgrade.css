@@ -68,10 +68,7 @@
   align-items: center !important;
   justify-content: center !important;
 }
-const previewAside = document.querySelector(".workspace-grid > aside:last-child, .preview-panel");
-  if (previewAside) {
-    previewAside.appendChild(challengeBox);
-  }
+
 
 .missia-challenge-bar {
   width: 100%;

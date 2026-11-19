@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MissIA — Aprenda Programação em Tempo Real</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Orbitron:wght@800;900&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="missia-upgrade.css" />
+<script type="module" src="missia-upgrade.js"></script>
+</head>
+<body>
+  <canvas id="bg-canvas" class="bg-canvas"></canvas>
+  <div id="fx-layer" class="fx-layer"></div>
+
+  <section id="login-overlay" class="overlay-screen">
+    <div class="glass-card login-card">
+      <div class="brand-header">
+        <div class="clover-badge pulse-glow">
+          <svg viewBox="0 0 120 120" class="clover-svg">
+            <path d="M60 56 C58 34, 46 18, 34 22 C24 25, 24 37, 18 40 C10 44, 12 58, 30 58 C42 58, 52 57, 60 56 Z" />
+            <path d="M60 56 C62 34, 74 18, 86 22 C96 25, 96 37, 102 40 C110 44, 108 58, 90 58 C78 58, 68 57, 60 56 Z" />
+            <path d="M60 58 C48 59, 28 60, 20 72 C14 81, 24 90, 28 96 C33 104, 48 100, 54 84 C57 74, 59 65, 60 58 Z" />
+            <path d="M60 58 C72 59, 92 60, 100 72 C106 81, 96 90, 92 96 C87 104, 72 100, 66 84 C63 74, 61 65, 60 58 Z" />
+            <path d="M60 60 C60 78, 56 96, 45 108 C42 111, 48 115, 53 110 C63 99, 65 80, 62 60 Z" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="login-title">Miss<span class="ia-neon">Ia</span> Studio</h1>
+          <p class="login-subtitle">Programação de um jeito mais fácil!</p>
+        </div>
+      </div>
+
+      <div class="auth-buttons">
+        <button type="button" class="glass-btn auth-btn google-btn" data-auth="Conta Google">
+          <span class="auth-dot">G</span>
+          <span>Continuar com Google</span>
+        </button>
+        <button type="button" class="glass-btn auth-btn" data-auth="Apple Account">
+          <span class="auth-dot"></span>
+          <span>Continuar com Apple</span>
+        </button>
+        <div class="auth-row">
+          <button type="button" class="glass-btn auth-btn" id="btn-phone-toggle">Somente Telefone</button>
+          <button type="button" class="glass-btn auth-btn" id="btn-email-toggle">Somente E-mail</button>
+        </div>
+      </div>
+
+      <div id="quick-auth-box" class="quick-auth-box is-hidden" hidden>
+        <input id="quick-auth-input" type="text" class="glass-input" placeholder="Digite aqui..." />
+        <button type="button" id="quick-auth-confirm" class="glass-btn primary-btn">Conectar</button>
+      </div>
+
+      <div class="guest-warning-box">
+        <p class="warning-text">
+          <strong>Login Opcional:</strong> Caso desinstale o app ou limpe os dados do navegador sem fazer login, o seu progresso não será salvo.
+        </p>
+        <button type="button" id="btn-skip-login" class="glass-btn ghost-btn">Entrar agora sem Login</button>
+      </div>
+    </div>
+  </section>
+
+  <div id="paste-modal" class="overlay-screen modal-layer is-hidden" hidden>
+    <div class="glass-card paste-card">
+      <div class="paste-header">
+        <div class="clover-badge pulse-glow">
+          <svg viewBox="0 0 120 120" class="clover-svg">
+            <path d="M60 56 C58 34, 46 18, 34 22 C24 25, 24 37, 18 40 C10 44, 12 58, 30 58 C42 58, 52 57, 60 56 Z" />
+            <path d="M60 56 C62 34, 74 18, 86 22 C96 25, 96 37, 102 40 C110 44, 108 58, 90 58 C78 58, 68 57, 60 56 Z" />
+            <path d="M60 58 C48 59, 28 60, 20 72 C14 81, 24 90, 28 96 C33 104, 48 100, 54 84 C57 74, 59 65, 60 58 Z" />
+            <path d="M60 58 C72 59, 92 60, 100 72 C106 81, 96 90, 92 96 C87 104, 72 100, 66 84 C63 74, 61 65, 60 58 Z" />
+            <path d="M60 60 C60 78, 56 96, 45 108 C42 111, 48 115, 53 110 C63 99, 65 80, 62 60 Z" />
+          </svg>
+        </div>
+        <div>
+          <span class="paste-tag">MissIA Detectou Código</span>
+          <h2 class="paste-title">Código Externo Colado</h2>
+        </div>
+      </div>
+
+      <p class="paste-desc">
+        Vi que você colou um código externo aqui, se quiser posso te explicar o que cada palavra aqui faz mano, o que você acha?
+      </p>
+
+      <div class="paste-actions">
+        <button type="button" id="btn-explain-all" class="glass-btn primary-btn">Bora! Me explica cada palavra</button>
+        <button type="button" id="btn-dismiss-paste" class="glass-btn ghost-btn">Deixa quieto, vou clicar nas palavras</button>
+      </div>
+    </div>
+  </div>
+
+  <main id="app-shell" class="app-shell is-blurred">
+    <header class="glass-panel topbar">
+      <div class="topbar-left">
+        <div class="clover-badge small-badge">
+          <svg viewBox="0 0 120 120" class="clover-svg">
+            <path d="M60 56 C58 34, 46 18, 34 22 C24 25, 24 37, 18 40 C10 44, 12 58, 30 58 C42 58, 52 57, 60 56 Z" />
+            <path d="M60 56 C62 34, 74 18, 86 22 C96 25, 96 37, 102 40 C110 44, 108 58, 90 58 C78 58, 68 57, 60 56 Z" />
+            <path d="M60 58 C48 59, 28 60, 20 72 C14 81, 24 90, 28 96 C33 104, 48 100, 54 84 C57 74, 59 65, 60 58 Z" />
+            <path d="M60 58 C72 59, 92 60, 100 72 C106 81, 96 90, 92 96 C87 104, 72 100, 66 84 C63 74, 61 65, 60 58 Z" />
+            <path d="M60 60 C60 78, 56 96, 45 108 C42 111, 48 115, 53 110 C63 99, 65 80, 62 60 Z" />
+          </svg>
+        </div>
+
+        <span class="app-name">Miss<span class="ia-neon">IA</span></span>
+
+        <div class="top-prompt-picker">
+          <span class="top-picker-label" id="top-lang-indicator">HTML5:</span>
+          <select id="prompt-select" class="glass-select prompt-top-select"></select>
+        </div>
+
+        <button type="button" id="btn-save-project" class="glass-btn" data-i18n="saveProject">Salvar</button>
+        <button type="button" id="btn-export-html" class="glass-btn primary-btn" data-i18n="exportHtml">Baixar .HTML</button>
+        <button type="button" id="btn-export-code" class="glass-btn" data-i18n="exportCode">Exportar</button>
+      </div>
+
+      <div class="topbar-actions">
+        <select id="ui-locale-select" class="glass-select locale-select">
+          <option value="pt">🇧🇷 PT</option>
+          <option value="en">🇺🇸 EN</option>
+          <option value="es">🇪🇸 ES</option>
+        </select>
+
+        <button type="button" id="btn-top-login" class="glass-btn primary-btn" data-i18n="loginBtn">Login</button>
+
+        <div id="account-menu-wrap" class="account-menu-wrap is-hidden" hidden>
+          <button type="button" id="btn-account-trigger" class="glass-btn account-trigger-btn">
+            <img id="user-avatar-img" class="user-avatar-img is-hidden" hidden alt="Avatar" />
+            <span id="user-avatar-fallback" class="user-avatar-fallback">M</span>
+            <span id="user-display-name">Dev</span>
+          </button>
+
+<div id="account-dropdown" class="glass-card account-dropdown is-hidden" hidden>
+            <div class="acc-dropdown-header">
+              <h4 class="dropdown-title" data-i18n="accSettings">Configurações da Conta</h4>
+              <span id="cloud-sync-badge" class="cloud-sync-badge">Local Ativo</span>
+            </div>
+
+            <div class="acc-avatar-uploader">
+              <div class="acc-avatar-preview-wrap">
+                <img id="acc-preview-img" class="acc-preview-img is-hidden" hidden alt="Preview" />
+                <span id="acc-preview-letter" class="acc-preview-letter">M</span>
+              </div>
+              <div class="acc-upload-controls">
+                <label for="acc-file-input" class="glass-btn upload-photo-label">Escolher Foto (PC / Celular)</label>
+                <input id="acc-file-input" type="file" accept="image/*" class="is-hidden" hidden />
+                <span class="acc-upload-hint">JPG, PNG ou WebP • Salva na conta</span>
+              </div>
+            </div>
+
+            <label class="acc-label" data-i18n="accName">Nome de Exibição</label>
+            <input id="acc-name-input" type="text" class="glass-input" placeholder="Seu nome..." />
+
+            <label class="acc-label" data-i18n="accPhone">Telefone Vinculado</label>
+            <input id="acc-phone-input" type="tel" class="glass-input" placeholder="+55 (11) 9..." />
+
+            <label class="acc-label">Vincular Contas Oficiais</label>
+            <div class="acc-link-providers">
+              <button type="button" id="btn-link-google" class="glass-btn provider-link-btn">
+                <span class="provider-mini-dot">G</span>
+                <span id="label-link-google">Vincular Google</span>
+              </button>
+              <button type="button" id="btn-link-apple" class="glass-btn provider-link-btn">
+                <span class="provider-mini-dot"></span>
+                <span id="label-link-apple">Vincular Apple</span>
+              </button>
+            </div>
+
+            <div class="acc-actions">
+              <button type="button" id="btn-save-account" class="glass-btn primary-btn" data-i18n="accSave">Salvar no Banco</button>
+              <button type="button" id="btn-switch-account" class="glass-btn" data-i18n="accSwitch">Trocar Conta</button>
+              <button type="button" id="btn-logout" class="glass-btn danger-glass-btn" data-i18n="accLogout">Sair da Conta</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="workspace-grid">
+      <aside class="glass-panel sidebar left-langs-sidebar">
+        <div class="panel-section">
+          <div class="prompts-header-row">
+            <h3 class="section-title" id="langs-section-title">Linguagens</h3>
+            <span class="badge-counter">22</span>
+          </div>
+          <p class="section-hint" id="langs-section-hint">Selecione a linguagem aqui e escolha os prompts lá no topo</p>
+          <div id="language-buttons-list" class="language-buttons-list"></div>
+        </div>
+
+        <div class="panel-section">
+          <h3 class="section-title" id="saved-section-title">Salvos no App</h3>
+          <div id="saved-list" class="saved-list"></div>
+        </div>
+      </aside>
+
+      <section class="center-column">
+        <div class="glass-panel live-meaning-bar">
+          <div class="meaning-header">
+            <span class="meaning-tag" id="meaning-word">print</span>
+            <span class="meaning-lang" id="meaning-lang-badge">HTML5</span>
+          </div>
+          <p id="meaning-description" class="meaning-description">
+            Digite qualquer palavra ou clique em cima de um comando no editor abaixo para ver na hora o que ele faz.
+          </p>
+        </div>
+
+        <div class="glass-panel editor-wrapper">
+          <div class="editor-toolbar">
+            <span id="editor-filename" class="editor-filename">projeto_1.html</span>
+            <span class="editor-tip">Tab autocompleta • Clique em qualquer palavra para ler o que ela faz</span>
+          </div>
+
+          <div class="editor-body">
+            <div id="line-numbers" class="line-numbers">1</div>
+            <textarea id="code-editor" class="code-editor" spellcheck="false" placeholder="Comece a digitar (ex: pri...) ou cole um código externo aqui..."></textarea>
+            <div id="autocomplete-box" class="glass-card autocomplete-box is-hidden" hidden></div>
+          </div>
+
+          <div class="token-bar-wrap">
+            <span class="token-bar-label">Comandos no código (clique):</span>
+            <div id="clickable-tokens" class="clickable-tokens"></div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="glass-panel sidebar right-preview-sidebar">
+        <div class="panel-section">
+          <h3 class="section-title" data-i18n="livePreviewTitle">Preview ao Vivo</h3>
+          <div class="preview-controls">
+            <button type="button" id="btn-desktop-view" class="glass-btn active-tab" data-i18n="pcView">Tela PC</button>
+            <button type="button" id="btn-mobile-view" class="glass-btn" data-i18n="mobileView">Tela Celular</button>
+            <button type="button" id="btn-refresh-preview" class="glass-btn primary-btn" data-i18n="refreshBtn">Atualizar</button>
+          </div>
+        </div>
+        <div class="preview-stage">
+          <div id="device-frame" class="device-frame desktop-mode">
+            <iframe id="live-preview-frame" class="live-preview-frame"></iframe>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <div id="floating-ai-widget" class="floating-ai-widget">
+    <div id="floating-chat-window" class="glass-card floating-chat-window is-hidden" hidden>
+      <div class="ai-header">
+        <div class="clover-badge mini-badge">
+          <svg viewBox="0 0 120 120" class="clover-svg">
+            <path d="M60 56 C58 34, 46 18, 34 22 C24 25, 24 37, 18 40 C10 44, 12 58, 30 58 C42 58, 52 57, 60 56 Z" />
+            <path d="M60 56 C62 34, 74 18, 86 22 C96 25, 96 37, 102 40 C110 44, 108 58, 90 58 C78 58, 68 57, 60 56 Z" />
+            <path d="M60 58 C48 59, 28 60, 20 72 C14 81, 24 90, 28 96 C33 104, 48 100, 54 84 C57 74, 59 65, 60 58 Z" />
+            <path d="M60 58 C72 59, 92 60, 100 72 C106 81, 96 90, 92 96 C87 104, 72 100, 66 84 C63 74, 61 65, 60 58 Z" />
+            <path d="M60 60 C60 78, 56 96, 45 108 C42 111, 48 115, 53 110 C63 99, 65 80, 62 60 Z" />
+          </svg>
+        </div>
+        <div class="ai-header-text">
+          <strong class="ai-name">Miss<span class="ia-neon">IA</span></strong>
+          <span class="ai-sub" data-i18n="aiSub">Tutor em tempo real</span>
+        </div>
+        <button type="button" id="btn-close-chat" class="glass-btn close-chat-btn">✕</button>
+      </div>
+
+      <div id="chat-messages" class="chat-messages"></div>
+
+      <div class="chat-input-row">
+        <input id="chat-input" type="text" class="glass-input" placeholder="Pergunte pra MissIA..." />
+        <button type="button" id="btn-send-chat" class="glass-btn primary-btn" data-i18n="sendBtn">Enviar</button>
+      </div>
+    </div>
+
+    <button type="button" id="ai-orb-btn" class="ai-orb-bubble" title="Falar com a MissIA">
+      <svg viewBox="0 0 120 120" class="clover-svg orb-clover">
+        <path d="M60 56 C58 34, 46 18, 34 22 C24 25, 24 37, 18 40 C10 44, 12 58, 30 58 C42 58, 52 57, 60 56 Z" />
+        <path d="M60 56 C62 34, 74 18, 86 22 C96 25, 96 37, 102 40 C110 44, 108 58, 90 58 C78 58, 68 57, 60 56 Z" />
+        <path d="M60 58 C48 59, 28 60, 20 72 C14 81, 24 90, 28 96 C33 104, 48 100, 54 84 C57 74, 59 65, 60 58 Z" />
+        <path d="M60 58 C72 59, 92 60, 100 72 C106 81, 96 90, 92 96 C87 104, 72 100, 66 84 C63 74, 61 65, 60 58 Z" />
+        <path d="M60 60 C60 78, 56 96, 45 108 C42 111, 48 115, 53 110 C63 99, 65 80, 62 60 Z" />
+      </svg>
+    </button>
+  </div>
+
+  <script src="app.js"></script>
+  <script src="catalogo.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

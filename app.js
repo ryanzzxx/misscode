@@ -2012,14 +2012,15 @@ function selectLanguageAndPrompt(lang, slotIdx, replaceCode, reloadIframe = true
       addChatBubble("Sobre '" + tokenMatch + "': " + DICTIONARY[tokenMatch], "ai");
     } else {
       const entry = (CATALOG[currentLang.id] || CATALOG.html)[activeSlot];
-      const cleanQ = userMessage.trim();
-if (/^[\d\s+\-*/().]+$/.test(cleanQ.replace(/quanto\s+[eé]\s*/i, ""))) {
-  const expr = cleanQ.replace(/quanto\s+[eé]\s*/i, "").replace(/[^0-9+\-*/().]/g, "");
-  try {
-    const res = Function("\"use strict\"; return (" + expr + ")")();
-    return "O resultado de " + expr + " é " + res + ".";
-  } catch (e) {}
-}
+const cleanQ = q.trim();
+      if (/^[\d\s+\-*/().]+$/.test(cleanQ.replace(/quanto\s+[eé]\s*/i, ""))) {
+        const expr = cleanQ.replace(/quanto\s+[eé]\s*/i, "").replace(/[^0-9+\-*/().]/g, "");
+        try {
+          const res = Function("\"use strict\"; return (" + expr + ")")();
+          addChatBubble("O resultado de " + expr + " é " + res + ".", "ai");
+          return;
+        } catch (e) {}
+      }
       addChatBubble("Você está explorando '" + entry[0] + "' em " + currentLang.name + "! Use os botões no topo do editor para alternar entre o Código Nativo Fiel e o HTML Exato do Preview.", "ai");
     }
   };

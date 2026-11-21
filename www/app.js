@@ -186,7 +186,7 @@ const CATALOG = {
     ["MemoryScope", "Visualizador didático de alocação e gerenciamento de memória.", 5],
     ["Compiler Explorer", "Ambiente de demonstração de etapas de compilação.", 4],
     ["Blockchain Explorer", "Explorador de blocos, transações e endereços públicos.", 1],
-    ["Packet Inspector", "Analisador visual de pacotes de rede.", 6],
+    ["Packet Inspector", "Analador visual de pacotes de rede.", 6],
     ["File Integrity Lab", "Ferramenta de verificação de integridade por hashes.", 4],
     ["Database Benchmark", "Plataforma de comparação de desempenho de bancos de dados.", 9],
     ["Embedded Systems Lab", "Simulador educacional de componentes embarcados.", 5],
@@ -1343,7 +1343,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const chatMessages = document.getElementById("chat-messages");
   const chatInput = document.getElementById("chat-input");
 
- if (editorToolbar && !document.getElementById("code-mode-switch")) {
+  if (editorToolbar && !document.getElementById("code-mode-switch")) {
     const sw = document.createElement("div");
     sw.id = "code-mode-switch";
     sw.className = "code-mode-switch";
@@ -1744,7 +1744,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-function selectLanguageAndPrompt(lang, slotIdx, replaceCode, reloadIframe = true) {
+  function selectLanguageAndPrompt(lang, slotIdx, replaceCode, reloadIframe = true) {
     currentLang = lang;
     activeSlot = slotIdx;
 
@@ -1916,7 +1916,7 @@ function selectLanguageAndPrompt(lang, slotIdx, replaceCode, reloadIframe = true
 
   on("btn-close-chat", "click", () => setVisible(floatingChatWindow, false));
 
- on("code-editor", "scroll", () => {
+  on("code-editor", "scroll", () => {
     if (lineNumbers && codeEditor) {
       lineNumbers.scrollTop = codeEditor.scrollTop;
     }
@@ -1997,31 +1997,85 @@ function selectLanguageAndPrompt(lang, slotIdx, replaceCode, reloadIframe = true
 
   on("btn-refresh-preview", "click", updatePreview);
 
-  const sendChat = () => {
+  const GEMINI_API_KEY = "AQ.Ab8RN6L-6CWG537iELPzNIJuaiTlfd_BiLte1UZBfJHKBElpgg";
+
+  const sendChat = async () => {
     if (!chatInput) return;
     const q = chatInput.value.trim();
     if (!q) return;
     addChatBubble(q, "user");
     chatInput.value = "";
 
+    const cleanQ = q.trim();
+    if (/^[\d\s+\-*/().]+$/.test(cleanQ.replace(/quanto\s+[eé]\s*/i, ""))) {
+      const expr = cleanQ.replace(/quanto\s+[eé]\s*/i, "").replace(/[^0-9+\-*/().]/g, "");
+      try {
+        const res = Function("\"use strict\"; return (" + expr + ")")();
+        addChatBubble("O resultado de " + expr + " é " + res + ".", "ai");
+        return;
+      } catch (e) {}
+    }
+
+    const entry = (CATALOG[currentLang.id] || CATALOG.html)[activeSlot];
+    const currentCode = document.querySelector("#code-editor, textarea")?.value || "";
+
+    if (GEMINI_API_KEY) {
+      try {
+        const systemPrompt =
+          "Você é a MissIA, tutora especialista em programação do app MissCode. " +
+          "Responda em português, de forma clara, didática, direta e sem enrolação, sempre focada em programação. " +
+          "Use exemplos curtos de código quando ajudar. " +
+          "Contexto atual do aluno: linguagem " + currentLang.name + ", projeto '" + entry[0] + "'. " +
+          "Código atual no editor:\n" + currentCode.slice(0, 1500);
+
+        const response = await fetch(
+"https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-3.0-flash:generateContent?key=" + GEMINI_API_KEY          
+ ,{
+
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-goog-api-key": GEMINI_API_KEY
+            },
+            body: JSON.stringify({
+              contents: [
+                {
+                  role: "user",
+                  parts: [{ text: systemPrompt + "\n\nPergunta do aluno: " + q }]
+                }
+              ],
+              generationConfig: {
+                temperature: 0.4,
+                maxOutputTokens: 600
+              }
+            })
+          }
+        );
+
+        const data = await response.json();
+        if (!response.ok) {
+          addChatBubble("Erro API (" + response.status + "): " + (data?.error?.message || JSON.stringify(data)), "ai");
+          return;
+        }
+
+        const aiReply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (aiReply) {
+          addChatBubble(aiReply.trim(), "ai");
+          return;
+        }
+      } catch (err) {
+        addChatBubble("Erro de rede/CORS: " + err.message, "ai");
+        return;
+      }
+    }
     const tokenMatch = Object.keys(DICTIONARY).find((k) =>
       q.toLowerCase().includes(k.toLowerCase())
     );
 
     if (tokenMatch) {
-      addChatBubble("Sobre '" + tokenMatch + "': " + DICTIONARY[tokenMatch], "ai");
+      addChatBubble("Sobre " + tokenMatch + ": " + DICTIONARY[tokenMatch], "ai");
     } else {
-      const entry = (CATALOG[currentLang.id] || CATALOG.html)[activeSlot];
-const cleanQ = q.trim();
-      if (/^[\d\s+\-*/().]+$/.test(cleanQ.replace(/quanto\s+[eé]\s*/i, ""))) {
-        const expr = cleanQ.replace(/quanto\s+[eé]\s*/i, "").replace(/[^0-9+\-*/().]/g, "");
-        try {
-          const res = Function("\"use strict\"; return (" + expr + ")")();
-          addChatBubble("O resultado de " + expr + " é " + res + ".", "ai");
-          return;
-        } catch (e) {}
-      }
-      addChatBubble("Você está explorando '" + entry[0] + "' em " + currentLang.name + "! Use os botões no topo do editor para alternar entre o Código Nativo Fiel e o HTML Exato do Preview.", "ai");
+      addChatBubble("Você está explorando '" + entry[0] + "' em " + currentLang.name + ". Conecte-se à internet para fazer qualquer pergunta de programação à MissIA!", "ai");
     }
   };
 
@@ -2038,6 +2092,7 @@ const cleanQ = q.trim();
   selectLanguageAndPrompt(LANGUAGES[0], 0, true);
   addChatBubble(UI_TEXT[currentLocale].welcomeAi, "ai");
 });
+
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyATs1qbWfvw1VHBri8EL5EQ_QQHUyf8Kcs",
   authDomain: "missia-e9059.firebaseapp.com",

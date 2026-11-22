@@ -1,7 +1,7 @@
 {
   "name": "MissCode",
   "short_name": "MissCode",
-  "start_url": "/",
+  "start_url": "/misscode/"
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#0f172a",

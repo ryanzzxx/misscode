@@ -381,6 +381,7 @@ const UI_TEXT = {
 
 const DICTIONARY = {
   print: "Escreve e mostra um texto, número ou variável diretamente na tela.",
+  input: "Lê dados digitados pelo usuário no teclado (Python) ou cria um campo de entrada no formulário (HTML).",
   println: "Escreve a informação na tela e pula automaticamente para a próxima linha.",
   printf: "Escreve na tela formatando variáveis dentro do texto.",
   console: "Objeto que dá acesso ao painel de mensagens e depuração do navegador.",
@@ -1996,8 +1997,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   on("btn-refresh-preview", "click", updatePreview);
-
-  const GEMINI_API_KEY = "AQ.Ab8RN6L-6CWG537iELPzNIJuaiTlfd_BiLte1UZBfJHKBElpgg";
+const GEMINI_API_KEY = "AQ.Ab8RN6KlTVtmM-5uhYnkAY121ThirnH0aMtqSs6tLY_1ICMX9Q";
 
   const sendChat = async () => {
     if (!chatInput) return;
@@ -2029,9 +2029,8 @@ document.addEventListener("DOMContentLoaded", () => {
           "Código atual no editor:\n" + currentCode.slice(0, 1500);
 
         const response = await fetch(
-"https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-3.0-flash:generateContent?key=" + GEMINI_API_KEY          
- ,{
-
+          "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+          {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -2053,21 +2052,16 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
         const data = await response.json();
-        if (!response.ok) {
-          addChatBubble("Erro API (" + response.status + "): " + (data?.error?.message || JSON.stringify(data)), "ai");
-          return;
-        }
-
         const aiReply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
         if (aiReply) {
           addChatBubble(aiReply.trim(), "ai");
           return;
         }
       } catch (err) {
-        addChatBubble("Erro de rede/CORS: " + err.message, "ai");
-        return;
+        console.warn("Fallback offline acionado:", err);
       }
     }
+
     const tokenMatch = Object.keys(DICTIONARY).find((k) =>
       q.toLowerCase().includes(k.toLowerCase())
     );

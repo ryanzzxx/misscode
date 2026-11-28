@@ -1,4 +1,3 @@
-cat << 'EOF' > ~/Documents/misscode/app.js
 const APP_CONFIG = {
   proxyUrl: 'https://misscode-api.vercel.app/api/missia',
   firebaseConfig: {
@@ -716,4 +715,3 @@ document.addEventListener('DOMContentLoaded', () => {
   renderAll();
   initFirebase();
 });
-EOF

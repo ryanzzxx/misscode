@@ -1,3 +1,4 @@
+cat << 'EOF' > ~/Documents/misscode/app.js
 const APP_CONFIG = {
   proxyUrl: 'https://misscode-api.vercel.app/api/missia',
   firebaseConfig: {
@@ -20,8 +21,8 @@ const state = {
   xp: 0,
   streak: 1,
   lastActiveDate: null,
-  completed: {}, // { "html5:0": true }
-  savedCode: {}, // { "html5:0": "..." }
+  completed: {},
+  savedCode: {},
   user: null,
   isMobile: false
 };
@@ -30,9 +31,6 @@ let fbAuth = null;
 let confirmationResult = null;
 let recaptchaVerifier = null;
 
-/* =========================================================
-   1. DETECÇÃO ESTRITA DESKTOP vs MOBILE (WEB + APK + IPA)
-   ========================================================= */
 function detectEnvironment() {
   const isCapacitorNative = Boolean(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
   const isSmallViewport = window.innerWidth <= 900;
@@ -41,9 +39,6 @@ function detectEnvironment() {
   document.body.classList.toggle('is-mobile-device', state.isMobile);
 }
 
-/* =========================================================
-   2. PERSISTÊNCIA LOCAL E SINCRONIZAÇÃO DE ESTADO
-   ========================================================= */
 function storageKey() {
   return state.user ? `misscode_v3_${state.user.uid}` : 'misscode_v3_guest';
 }
@@ -93,11 +88,15 @@ function updateStreakOnVisit() {
   }
 }
 
-/* =========================================================
-   3. HELPERS DO CATÁLOGO E EDITOR ATIVO
-   ========================================================= */
 function getActiveLang() {
-  return CATALOG.find(l => l.id === state.langId) || CATALOG[0];
+  return CATALOG.find(l => l.id === state.langId) || CATALOG[0] || {
+    id: 'html5',
+    name: 'HTML5',
+    ext: 'html',
+    color: '#ea580c',
+    badge: 'H5',
+    projects: [{ t: '1. Projeto Inicial', d: 'Iniciante', x: 80, p: 'Edite o código.', s: '<h1>Olá</h1>', r: ['<h1'] }]
+  };
 }
 
 function getActiveProject() {
@@ -133,9 +132,6 @@ function triggerHaptic(type = 'light') {
   } catch (_) {}
 }
 
-/* =========================================================
-   4. RENDERIZAÇÃO DESKTOP & MOBILE (SINCRONIZADAS)
-   ========================================================= */
 function renderAll() {
   const lang = getActiveLang();
   const proj = getActiveProject();
@@ -143,7 +139,6 @@ function renderAll() {
   const isDone = Boolean(state.completed[key]);
   const code = state.savedCode[key] !== undefined ? state.savedCode[key] : proj.s;
 
-  // Atualizar Badges de XP e Nível
   const level = Math.floor(state.xp / 300) + 1;
   document.getElementById('dtXpPill').textContent = `🔥 ${state.streak}d • ${state.xp} XP`;
   document.getElementById('mbXpBadge').textContent = `🔥${state.streak}d ⚡${state.xp}`;
@@ -154,7 +149,6 @@ function renderAll() {
   document.getElementById('statCompleted').textContent = `${doneCount} / 220`;
   document.getElementById('statXpBar').style.width = `${Math.min(100, ((state.xp % 300) / 300) * 100)}%`;
 
-  // Desktop Header & Sidebar
   document.getElementById('dtActiveLangPill').textContent = lang.name;
   document.getElementById('dtActiveLangPill').style.borderColor = lang.color;
   document.getElementById('dtFileName').textContent = `projeto_${String(state.projIdx + 1).padStart(2, '0')}.${lang.ext}`;
@@ -163,14 +157,12 @@ function renderAll() {
   renderLanguageLists();
   renderProjectSelect();
 
-  // Desktop Desafio
   document.getElementById('dtChallengeBadge').textContent = `${proj.d} • +${proj.x} XP`;
   document.getElementById('dtChallengeStatus').textContent = isDone ? '✓ Concluído' : 'Pendente';
   document.getElementById('dtChallengeStatus').className = `status-badge ${isDone ? 'done' : 'pending'}`;
   document.getElementById('dtChallengeTitle').textContent = proj.t;
   document.getElementById('dtChallengePrompt').textContent = proj.p;
 
-  // Mobile Header & Desafio
   document.getElementById('mbActiveLangTitle').textContent = `${lang.name} • ${state.projIdx + 1}/10 ▾`;
   document.getElementById('mbActiveProjName').textContent = proj.t;
   document.getElementById('mbChallengeBadge').textContent = `${proj.d} • +${proj.x} XP`;
@@ -179,7 +171,6 @@ function renderAll() {
   document.getElementById('mbChallengeTitle').textContent = proj.t;
   document.getElementById('mbChallengePrompt').textContent = proj.p;
 
-  // Sincronizar ambos editores
   const dtEd = document.getElementById('dtCodeEditor');
   const mbEd = document.getElementById('mbCodeEditor');
   dtEd.value = code;
@@ -263,9 +254,6 @@ function renderMobileProjectList() {
   });
 }
 
-/* =========================================================
-   5. EDITOR, NÚMEROS DE LINHA E DICIONÁRIO INSTANTÂNEO
-   ========================================================= */
 function syncLineNumbers(textarea, preEl) {
   const lines = textarea.value.split('\n').length;
   let nums = '';
@@ -308,9 +296,6 @@ function extractCodeTokens(code) {
   });
 }
 
-/* =========================================================
-   6. PREVIEW AO VIVO (WEB REAL + SIMULADOR INTERATIVO)
-   ========================================================= */
 function updateLivePreview(code) {
   const lang = getActiveLang();
   const proj = getActiveProject();
@@ -347,9 +332,6 @@ function updateLivePreview(code) {
   document.getElementById('mbPreviewFrame').srcdoc = htmlDoc;
 }
 
-/* =========================================================
-   7. VALIDADOR RIGOROSO ANTI-TRAPAÇA DE XP
-   ========================================================= */
 function stripComments(code) {
   return code
     .replace(/<!--[\s\S]*?-->/g, '')
@@ -359,7 +341,6 @@ function stripComments(code) {
 }
 
 function verifyChallengeSolution() {
-  const lang = getActiveLang();
   const proj = getActiveProject();
   const key = projectKey();
   const userRaw = getActiveEditor().value;
@@ -367,7 +348,6 @@ function verifyChallengeSolution() {
   const normUser = userRaw.replace(/\s+/g, ' ').trim();
   const normStarter = proj.s.replace(/\s+/g, ' ').trim();
 
-  // Regra 1: Impedir XP sem alterar o código inicial
   if (normUser === normStarter || normUser.length < 10) {
     triggerHaptic('light');
     showToast('⚠️ Você ainda não alterou o código inicial. Implemente a solução primeiro!');
@@ -375,11 +355,9 @@ function verifyChallengeSolution() {
     return;
   }
 
-  // Regra 2: Remover comentários para impedir trapaça colando palavras comentadas
   const cleanUser = stripComments(userRaw);
   const cleanStarter = stripComments(proj.s);
 
-  // Regra 3: Verificar cada requisito técnico do desafio
   const missing = [];
   for (const token of proj.r) {
     const countInStarter = cleanStarter.split(token).length - 1;
@@ -396,7 +374,6 @@ function verifyChallengeSolution() {
     return;
   }
 
-  // Regra 4: Verificar balanceamento básico de chaves/parênteses
   const openBraces = (cleanUser.match(/\{/g) || []).length;
   const closeBraces = (cleanUser.match(/\}/g) || []).length;
   if (openBraces !== closeBraces) {
@@ -404,7 +381,6 @@ function verifyChallengeSolution() {
     return;
   }
 
-  // Sucesso real!
   state.savedCode[key] = userRaw;
   if (!state.completed[key]) {
     state.completed[key] = true;
@@ -420,9 +396,6 @@ function verifyChallengeSolution() {
   renderAll();
 }
 
-/* =========================================================
-   8. CHAT MISSIA (PROXY VERCEL SEGURO)
-   ========================================================= */
 async function askMissIA(question, feedEl, inputEl) {
   const lang = getActiveLang();
   const proj = getActiveProject();
@@ -441,7 +414,7 @@ async function askMissIA(question, feedEl, inputEl) {
   feedEl.appendChild(botBubble);
 
   try {
-    const prompt = `Você é a MissIA, tutora de programação do app MissCode. Responda em português de forma direta, didática e sem entregar a resposta inteira pronta de mão beijada.\nLinguagem: ${lang.name}\nDesafio: ${proj.t} - ${proj.p}\nCódigo atual do aluno:\n${code}\n\nPergunta do aluno: ${question}`;
+    const prompt = `Você é a MissIA, tutora de programação do app MissCode. Responda em português de forma direta, didática e sem entregar a resposta inteira pronta.\nLinguagem: ${lang.name}\nDesafio: ${proj.t} - ${proj.p}\nCódigo atual do aluno:\n${code}\n\nPergunta do aluno: ${question}`;
     const res = await fetch(APP_CONFIG.proxyUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -455,9 +428,6 @@ async function askMissIA(question, feedEl, inputEl) {
   feedEl.scrollTop = feedEl.scrollHeight;
 }
 
-/* =========================================================
-   9. FIREBASE AUTHENTICATION
-   ========================================================= */
 function initFirebase() {
   try {
     if (!window.firebase || !APP_CONFIG.firebaseConfig.apiKey) return;
@@ -484,9 +454,6 @@ function initFirebase() {
   } catch (_) {}
 }
 
-/* =========================================================
-   10. EVENTOS E TECLADO INTELIGENTE MOBILE (OPÇÃO C)
-   ========================================================= */
 function switchMobileTab(tabName) {
   document.querySelectorAll('.mb-tab').forEach(b => b.classList.toggle('active', b.dataset.mbtab === tabName));
   document.querySelectorAll('.mb-pane').forEach(p => p.classList.remove('active'));
@@ -498,7 +465,7 @@ function switchMobileTab(tabName) {
 function setupMobileKeyboardDetection() {
   const shell = document.getElementById('mobileApp');
   const mbEditor = document.getElementById('mbCodeEditor');
-  let baseHeight = window.innerHeight;
+  const baseHeight = window.innerHeight;
 
   if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', () => {
@@ -514,7 +481,6 @@ function setupMobileKeyboardDetection() {
 function bindEvents() {
   window.addEventListener('resize', detectEnvironment);
 
-  // Sincronização entre editores Desktop e Mobile
   const dtEd = document.getElementById('dtCodeEditor');
   const mbEd = document.getElementById('mbCodeEditor');
 
@@ -539,7 +505,6 @@ function bindEvents() {
   mbEd.addEventListener('click', () => lookupWordAtCursor(mbEd));
   mbEd.addEventListener('keyup', () => lookupWordAtCursor(mbEd));
 
-  // Suporte à tecla Tab no Desktop
   dtEd.addEventListener('keydown', e => {
     if (e.key === 'Tab') {
       e.preventDefault();
@@ -550,7 +515,6 @@ function bindEvents() {
     }
   });
 
-  // Barra de símbolos no Mobile
   document.querySelectorAll('#mbSymbolBar button[data-ins]').forEach(btn => {
     btn.addEventListener('mousedown', e => {
       e.preventDefault();
@@ -570,14 +534,12 @@ function bindEvents() {
     showToast('▶️ Preview atualizado!');
   });
 
-  // Seletor de projeto Desktop
   document.getElementById('dtProjectSelect').addEventListener('change', e => {
     state.projIdx = Number(e.target.value);
     saveProgress();
     renderAll();
   });
 
-  // Frame PC / Celular no Desktop
   document.getElementById('dtFramePc').onclick = () => {
     document.getElementById('dtDeviceFrame').className = 'device-frame pc-mode';
     document.getElementById('dtFramePc').classList.add('active');
@@ -593,9 +555,7 @@ function bindEvents() {
     showToast('🔄 Preview atualizado');
   };
 
-  // Botões de Ação (Resetar, Verificar XP, Próximo, Salvar, Baixar)
   const resetProject = () => {
-    const proj = getActiveProject();
     delete state.savedCode[projectKey()];
     saveProgress();
     renderAll();
@@ -643,12 +603,16 @@ function bindEvents() {
     a.click();
   };
 
-  // Abas Mobile Split-Screen
+  document.getElementById('dtBtnLocale').onclick = () => {
+    state.locale = state.locale === 'PT' ? 'EN' : 'PT';
+    document.getElementById('dtBtnLocale').textContent = state.locale;
+    showToast(`Idioma da interface: ${state.locale}`);
+  };
+
   document.querySelectorAll('.mb-tab').forEach(btn => {
     btn.onclick = () => switchMobileTab(btn.dataset.mbtab);
   });
 
-  // Modais
   document.getElementById('mbOpenCatalogBtn').onclick = () => {
     renderLanguageLists();
     renderMobileProjectList();
@@ -664,7 +628,6 @@ function bindEvents() {
     btn.onclick = () => { document.getElementById(btn.dataset.close).hidden = true; };
   });
 
-  // Formulários MissIA
   document.getElementById('dtAiForm').onsubmit = e => {
     e.preventDefault();
     const inp = document.getElementById('dtAiInput');
@@ -676,7 +639,6 @@ function bindEvents() {
     if (inp.value.trim()) askMissIA(inp.value.trim(), document.getElementById('mbAiMessages'), inp);
   };
 
-  // Autenticação Firebase
   const feedback = document.getElementById('authFeedback');
   document.getElementById('emailAuthForm').onsubmit = async e => {
     e.preventDefault();
@@ -754,3 +716,4 @@ document.addEventListener('DOMContentLoaded', () => {
   renderAll();
   initFirebase();
 });
+EOF

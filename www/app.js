@@ -10,909 +10,747 @@ const APP_CONFIG = {
   }
 };
 
-const LANGUAGES = [
-  {
-    id: 'html',
-    label: 'HTML5',
-    file: 'index.html',
-    tokens: ['<div>', '<section>', '<button>', 'class=""', 'id=""', '<h1>', '<p>', '<a href="">'],
-    starter: `<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <style>
-    body { font-family: sans-serif; background: #0f172a; color: #f8fafc; padding: 24px; }
-    .card { background: #1e293b; padding: 20px; border-radius: 14px; }
-    button { background: #3b82f6; color: #fff; border: none; padding: 10px 16px; border-radius: 8px; font-weight: bold; }
-  </style>
-</head>
-<body>
-  <div class="card">
-    <h1>Olá, MissCode!</h1>
-    <p>Edite este código e veja o resultado ao vivo.</p>
-    <button onclick="alert('Funcionando!')">Testar Clique</button>
-  </div>
-</body>
-</html>`
-  },
-  {
-    id: 'css',
-    label: 'CSS3',
-    file: 'style.css',
-    tokens: ['display: flex;', 'grid-template-columns:', 'gap: 12px;', 'border-radius:', '@media (max-width: 768px)', '100dvh', 'var(--)'],
-    starter: `<style>
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 12px;
-    padding: 16px;
-    font-family: sans-serif;
-  }
-  .item {
-    background: #1e293b;
-    color: #38bdf8;
-    padding: 20px;
-    border-radius: 12px;
-    text-align: center;
-    font-weight: 700;
-  }
-</style>
-<div class="grid">
-  <div class="item">Card 01</div>
-  <div class="item">Card 02</div>
-  <div class="item">Card 03</div>
-</div>`
-  },
-  {
-    id: 'js',
-    label: 'JavaScript',
-    file: 'app.js',
-    tokens: ['const ', 'let ', 'function ', '() => {}', 'document.querySelector()', 'addEventListener', 'console.log()'],
-    starter: `<div id="app" style="font-family:sans-serif;padding:20px;color:#0f172a"></div>
-<script>
-  const tarefas = ['Estudar HTML', 'Praticar JS', 'Subir APK'];
-  const el = document.getElementById('app');
-  el.innerHTML = '<h2>Minhas Tarefas (' + tarefas.length + ')</h2><ul>' +
-    tarefas.map(t => '<li>' + t + '</li>').join('') + '</ul>';
-</script>`
-  },
-  {
-    id: 'python',
-    label: 'Python',
-    file: 'main.py',
-    tokens: ['def ', 'return ', 'for item in ', 'if __name__ == "__main__":', 'print()', 'import ', '[x for x in ]'],
-    starter: `def calcular_xp(desafios_concluidos, streak_dias):
-    base = desafios_concluidos * 50
-    bonus = streak_dias * 15
-    return base + bonus
-
-total = calcular_xp(4, 3)
-print(f"XP Total acumulado: {total} XP")`
-  },
-  {
-    id: 'sql',
-    label: 'SQL',
-    file: 'query.sql',
-    tokens: ['SELECT ', 'FROM ', 'WHERE ', 'JOIN ', 'GROUP BY ', 'ORDER BY ', 'INSERT INTO '],
-    starter: `SELECT nome, linguagem, xp_total
-FROM alunos
-WHERE xp_total >= 200
-ORDER BY xp_total DESC;`
-  }
-];
-
-const LESSONS_AND_CHALLENGES = [
-  {
-    id: 'html-1',
-    lang: 'html',
-    title: '1. Cartão Interativo HTML5',
-    xp: 50,
-    difficulty: 'Fácil',
-    desc: 'Crie uma tag <button> dentro da página com um evento onclick ou texto de ação.',
-    validate: (code) => /<button[\s>]/i.test(code) && /<\/button>/i.test(code),
-    template: LANGUAGES[0].starter
-  },
-  {
-    id: 'css-1',
-    lang: 'css',
-    title: '2. Layout Flex ou Grid Responsivo',
-    xp: 75,
-    difficulty: 'Fácil',
-    desc: 'Aplique display: flex ou display: grid no estilo para organizar os elementos.',
-    validate: (code) => /display\s*:\s*(flex|grid)/i.test(code),
-    template: LANGUAGES[1].starter
-  },
-  {
-    id: 'js-1',
-    lang: 'js',
-    title: '3. Validador de Estado de Tarefa',
-    xp: 100,
-    difficulty: 'Médio',
-    desc: 'Escreva uma função ou arrow function que verifique uma condição com if ou operador ternário.',
-    validate: (code) => /(function|=>)/.test(code) && /(\bif\b|\?)/.test(code),
-    template: `<div id="status" style="font-family:sans-serif;padding:20px"></div>
-<script>
-  function validarTarefa(concluida) {
-    return concluida ? 'Concluída com sucesso' : 'Pendente';
-  }
-  document.getElementById('status').textContent = validarTarefa(true);
-</script>`
-  },
-  {
-    id: 'python-1',
-    lang: 'python',
-    title: '4. Função de Cálculo de Bônus',
-    xp: 120,
-    difficulty: 'Médio',
-    desc: 'Defina uma função com def que receba parâmetros e utilize return.',
-    validate: (code) => /\bdef\s+\w+\s*\(/.test(code) && /\breturn\b/.test(code),
-    template: LANGUAGES[3].starter
-  },
-  {
-    id: 'sql-1',
-    lang: 'sql',
-    title: '5. Consulta com Filtro e Ordenação',
-    xp: 150,
-    difficulty: 'Difícil',
-    desc: 'Escreva uma consulta usando SELECT, FROM e WHERE.',
-    validate: (code) => /\bSELECT\b/i.test(code) && /\bFROM\b/i.test(code) && /\bWHERE\b/i.test(code),
-    template: LANGUAGES[4].starter
-  }
-];
-
-const KEYWORD_DICTIONARY = {
-  div: {
-    lang: 'HTML5',
-    desc: 'Contêiner genérico em bloco usado para agrupar elementos e estruturar layouts.',
-    example: '<div class="card">\n  <h2>Título</h2>\n</div>'
-  },
-  button: {
-    lang: 'HTML5',
-    desc: 'Cria um botão clicável acessível para disparar ações ou enviar formulários.',
-    example: '<button type="button" onclick="salvar()">Salvar</button>'
-  },
-  section: {
-    lang: 'HTML5',
-    desc: 'Define uma seção temática semântica dentro do documento.',
-    example: '<section id="perfil">\n  <h2>Meu Perfil</h2>\n</section>'
-  },
-  flex: {
-    lang: 'CSS3',
-    desc: 'Ativa o Flexbox, alinhando itens em linha ou coluna com distribuição dinâmica de espaço.',
-    example: '.container {\n  display: flex;\n  gap: 12px;\n  align-items: center;\n}'
-  },
-  grid: {
-    lang: 'CSS3',
-    desc: 'Ativa o CSS Grid para criar grades bidimensionais de linhas e colunas responsivas.',
-    example: '.grade {\n  display: grid;\n  grid-template-columns: repeat(2, 1fr);\n  gap: 10px;\n}'
-  },
-  function: {
-    lang: 'JavaScript',
-    desc: 'Declara um bloco de código reutilizável que pode receber parâmetros e retornar valores.',
-    example: 'function somar(a, b) {\n  return a + b;\n}'
-  },
-  const: {
-    lang: 'JavaScript',
-    desc: 'Declara uma referência constante cujo identificador não pode ser reatribuído.',
-    example: 'const taxa = 0.15;'
-  },
-  queryselector: {
-    lang: 'JavaScript',
-    desc: 'Seleciona o primeiro elemento do DOM que corresponde ao seletor CSS informado.',
-    example: 'const btn = document.querySelector(".btn-primary");'
-  },
-  def: {
-    lang: 'Python',
-    desc: 'Define uma função em Python seguida pelo nome, parâmetros e dois pontos.',
-    example: 'def saudacao(nome):\n    return f"Olá, {nome}"'
-  },
-  select: {
-    lang: 'SQL',
-    desc: 'Especifica quais colunas devem ser retornadas de uma tabela no banco de dados.',
-    example: 'SELECT id, nome FROM usuarios WHERE ativo = 1;'
-  }
-};
-
-const STORAGE_KEY = 'misscode_state_v2';
+const CATALOG = window.MISSCODE_CATALOG || [];
+const DICT = window.TOKEN_DICTIONARY || {};
 
 const state = {
-  activeLang: 'html',
-  activeChallengeIdx: 0,
-  trailFilter: 'all',
+  langId: 'html5',
+  projIdx: 0,
   locale: 'PT',
   xp: 0,
   streak: 1,
-  lastActiveDate: '',
-  completedIds: [],
-  savedCodes: {},
+  lastActiveDate: null,
+  completed: {}, // { "html5:0": true }
+  savedCode: {}, // { "html5:0": "..." }
   user: null,
-  confirmationResult: null,
-  currentSheetExample: ''
+  isMobile: false
 };
 
-let firebaseAuth = null;
+let fbAuth = null;
+let confirmationResult = null;
 let recaptchaVerifier = null;
 
-function loadState() {
+/* =========================================================
+   1. DETECÇÃO ESTRITA DESKTOP vs MOBILE (WEB + APK + IPA)
+   ========================================================= */
+function detectEnvironment() {
+  const isCapacitorNative = Boolean(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+  const isSmallViewport = window.innerWidth <= 900;
+  const isTouchUA = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  state.isMobile = isCapacitorNative || isSmallViewport || (isTouchUA && window.innerWidth <= 1024);
+  document.body.classList.toggle('is-mobile-device', state.isMobile);
+}
+
+/* =========================================================
+   2. PERSISTÊNCIA LOCAL E SINCRONIZAÇÃO DE ESTADO
+   ========================================================= */
+function storageKey() {
+  return state.user ? `misscode_v3_${state.user.uid}` : 'misscode_v3_guest';
+}
+
+function loadProgress() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(storageKey());
     if (raw) {
       const parsed = JSON.parse(raw);
-      Object.assign(state, parsed);
+      state.xp = parsed.xp || 0;
+      state.streak = parsed.streak || 1;
+      state.lastActiveDate = parsed.lastActiveDate || null;
+      state.completed = parsed.completed || {};
+      state.savedCode = parsed.savedCode || {};
+      if (parsed.langId) state.langId = parsed.langId;
+      if (typeof parsed.projIdx === 'number') state.projIdx = parsed.projIdx;
     }
-  } catch {}
-  updateDailyStreak();
+  } catch (_) {}
+  updateStreakOnVisit();
 }
 
-function saveState() {
-  const uidPrefix = state.user ? `_${state.user.uid}` : '';
-  const payload = {
-    activeLang: state.activeLang,
-    activeChallengeIdx: state.activeChallengeIdx,
-    locale: state.locale,
-    xp: state.xp,
-    streak: state.streak,
-    lastActiveDate: state.lastActiveDate,
-    completedIds: state.completedIds,
-    savedCodes: state.savedCodes
-  };
-  localStorage.setItem(STORAGE_KEY + uidPrefix, JSON.stringify(payload));
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+function saveProgress() {
+  try {
+    localStorage.setItem(storageKey(), JSON.stringify({
+      xp: state.xp,
+      streak: state.streak,
+      lastActiveDate: state.lastActiveDate,
+      completed: state.completed,
+      savedCode: state.savedCode,
+      langId: state.langId,
+      projIdx: state.projIdx
+    }));
+  } catch (_) {}
 }
 
-function updateDailyStreak() {
+function updateStreakOnVisit() {
   const today = new Date().toISOString().slice(0, 10);
   if (!state.lastActiveDate) {
     state.lastActiveDate = today;
     state.streak = 1;
     return;
   }
-  if (state.lastActiveDate === today) return;
-  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-  state.streak = state.lastActiveDate === yesterday ? state.streak + 1 : 1;
-  state.lastActiveDate = today;
+  if (state.lastActiveDate !== today) {
+    const diffDays = Math.round((new Date(today) - new Date(state.lastActiveDate)) / 86400000);
+    state.streak = diffDays === 1 ? state.streak + 1 : 1;
+    state.lastActiveDate = today;
+  }
 }
 
-function showToast(message) {
-  const toast = document.getElementById('toast');
-  toast.textContent = message;
-  toast.hidden = false;
-  clearTimeout(toast._timer);
-  toast._timer = setTimeout(() => {
-    toast.hidden = true;
-  }, 2600);
+/* =========================================================
+   3. HELPERS DO CATÁLOGO E EDITOR ATIVO
+   ========================================================= */
+function getActiveLang() {
+  return CATALOG.find(l => l.id === state.langId) || CATALOG[0];
 }
 
-function isMobileScreen() {
-  return window.matchMedia('(max-width: 768px)').matches;
+function getActiveProject() {
+  const lang = getActiveLang();
+  return lang.projects[state.projIdx] || lang.projects[0];
 }
 
-function setupViewportAdaptation() {
-  const syncViewport = () => {
-    if (window.visualViewport) {
-      const vvh = window.visualViewport.height;
-      document.documentElement.style.setProperty('--vvh', `${vvh}px`);
-      const keyboardOpen = isMobileScreen() && window.innerHeight - vvh > 140;
-      document.body.classList.toggle('keyboard-open', keyboardOpen);
+function projectKey(langId = state.langId, idx = state.projIdx) {
+  return `${langId}:${idx}`;
+}
+
+function getActiveEditor() {
+  return state.isMobile
+    ? document.getElementById('mbCodeEditor')
+    : document.getElementById('dtCodeEditor');
+}
+
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.hidden = false;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.hidden = true; }, 3400);
+}
+
+function triggerHaptic(type = 'light') {
+  try {
+    if (window.Capacitor?.Plugins?.Haptics) {
+      window.Capacitor.Plugins.Haptics.impact({ style: type === 'heavy' ? 'HEAVY' : 'LIGHT' });
+    } else if (navigator.vibrate) {
+      navigator.vibrate(type === 'heavy' ? [40, 30, 60] : 18);
     }
-  };
-
-  if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', syncViewport);
-    window.visualViewport.addEventListener('scroll', syncViewport);
-  }
-  window.addEventListener('resize', syncViewport);
-  syncViewport();
+  } catch (_) {}
 }
 
-function setActiveTab(tabName) {
-  document.body.dataset.activeTab = tabName;
-  document.querySelectorAll('.nav-tab').forEach((btn) => {
-    btn.classList.toggle('is-active', btn.dataset.tab === tabName);
-  });
-  if (tabName === 'preview') {
-    renderPreview();
-  }
+/* =========================================================
+   4. RENDERIZAÇÃO DESKTOP & MOBILE (SINCRONIZADAS)
+   ========================================================= */
+function renderAll() {
+  const lang = getActiveLang();
+  const proj = getActiveProject();
+  const key = projectKey();
+  const isDone = Boolean(state.completed[key]);
+  const code = state.savedCode[key] !== undefined ? state.savedCode[key] : proj.s;
+
+  // Atualizar Badges de XP e Nível
+  const level = Math.floor(state.xp / 300) + 1;
+  document.getElementById('dtXpPill').textContent = `🔥 ${state.streak}d • ${state.xp} XP`;
+  document.getElementById('mbXpBadge').textContent = `🔥${state.streak}d ⚡${state.xp}`;
+  document.getElementById('statLevel').textContent = `Nível ${level}`;
+  document.getElementById('statXp').textContent = `${state.xp} XP`;
+  document.getElementById('statStreak').textContent = `${state.streak} dia(s)`;
+  const doneCount = Object.keys(state.completed).length;
+  document.getElementById('statCompleted').textContent = `${doneCount} / 220`;
+  document.getElementById('statXpBar').style.width = `${Math.min(100, ((state.xp % 300) / 300) * 100)}%`;
+
+  // Desktop Header & Sidebar
+  document.getElementById('dtActiveLangPill').textContent = lang.name;
+  document.getElementById('dtActiveLangPill').style.borderColor = lang.color;
+  document.getElementById('dtFileName').textContent = `projeto_${String(state.projIdx + 1).padStart(2, '0')}.${lang.ext}`;
+  document.getElementById('dtDictLang').textContent = lang.name;
+
+  renderLanguageLists();
+  renderProjectSelect();
+
+  // Desktop Desafio
+  document.getElementById('dtChallengeBadge').textContent = `${proj.d} • +${proj.x} XP`;
+  document.getElementById('dtChallengeStatus').textContent = isDone ? '✓ Concluído' : 'Pendente';
+  document.getElementById('dtChallengeStatus').className = `status-badge ${isDone ? 'done' : 'pending'}`;
+  document.getElementById('dtChallengeTitle').textContent = proj.t;
+  document.getElementById('dtChallengePrompt').textContent = proj.p;
+
+  // Mobile Header & Desafio
+  document.getElementById('mbActiveLangTitle').textContent = `${lang.name} • ${state.projIdx + 1}/10 ▾`;
+  document.getElementById('mbActiveProjName').textContent = proj.t;
+  document.getElementById('mbChallengeBadge').textContent = `${proj.d} • +${proj.x} XP`;
+  document.getElementById('mbChallengeStatus').textContent = isDone ? '✓ Concluído' : 'Pendente';
+  document.getElementById('mbChallengeStatus').className = `status-badge ${isDone ? 'done' : 'pending'}`;
+  document.getElementById('mbChallengeTitle').textContent = proj.t;
+  document.getElementById('mbChallengePrompt').textContent = proj.p;
+
+  // Sincronizar ambos editores
+  const dtEd = document.getElementById('dtCodeEditor');
+  const mbEd = document.getElementById('mbCodeEditor');
+  dtEd.value = code;
+  mbEd.value = code;
+  syncLineNumbers(dtEd, document.getElementById('dtLineNumbers'));
+  syncLineNumbers(mbEd, document.getElementById('mbLineNumbers'));
+  extractCodeTokens(code);
+  updateLivePreview(code);
 }
 
-function renderLanguageChips() {
-  const container = document.getElementById('langChips');
-  container.innerHTML = LANGUAGES.map(
-    (lang) =>
-      `<button type="button" class="lang-chip ${lang.id === state.activeLang ? 'is-active' : ''}" data-lang="${lang.id}">${lang.label}</button>`
-  ).join('');
+function renderLanguageLists() {
+  const dtList = document.getElementById('dtLanguageList');
+  const mbGrid = document.getElementById('mbLanguageGrid');
+  dtList.innerHTML = '';
+  mbGrid.innerHTML = '';
 
-  container.querySelectorAll('.lang-chip').forEach((btn) => {
-    btn.addEventListener('click', () => selectLanguage(btn.dataset.lang));
-  });
-}
+  CATALOG.forEach(lang => {
+    const completedInLang = lang.projects.filter((_, i) => state.completed[`${lang.id}:${i}`]).length;
+    const isActive = lang.id === state.langId;
 
-function renderAutocompleteBar() {
-  const langObj = LANGUAGES.find((l) => l.id === state.activeLang) || LANGUAGES[0];
-  const bar = document.getElementById('autocompleteBar');
-  bar.innerHTML = langObj.tokens
-    .map((tok) => `<button type="button" class="ac-key">${tok.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</button>`)
-    .join('');
-
-  bar.querySelectorAll('.ac-key').forEach((btn, idx) => {
-    btn.addEventListener('click', () => insertAtCursor(langObj.tokens[idx]));
-  });
-}
-
-function insertAtCursor(text) {
-  const editor = document.getElementById('codeEditor');
-  const start = editor.selectionStart;
-  const end = editor.selectionEnd;
-  const value = editor.value;
-  editor.value = value.slice(0, start) + text + value.slice(end);
-  editor.focus();
-  const cursor = start + text.length;
-  editor.setSelectionRange(cursor, cursor);
-  state.savedCodes[state.activeLang] = editor.value;
-  saveState();
-}
-
-function selectLanguage(langId) {
-  state.activeLang = langId;
-  const langObj = LANGUAGES.find((l) => l.id === langId) || LANGUAGES[0];
-  document.getElementById('activeFileName').textContent = langObj.file;
-  const editor = document.getElementById('codeEditor');
-  editor.value = state.savedCodes[langId] || langObj.starter;
-  renderLanguageChips();
-  renderAutocompleteBar();
-  saveState();
-  if (!isMobileScreen()) {
-    renderPreview();
-  }
-}
-
-function renderPreview() {
-  const code = document.getElementById('codeEditor').value;
-  const frame = document.getElementById('previewFrame');
-  if (state.activeLang === 'python' || state.activeLang === 'sql') {
-    const escaped = code.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    frame.srcdoc = `<!DOCTYPE html><html><body style="margin:0;padding:16px;background:#090e1a;color:#34d399;font-family:monospace;font-size:15px;">
-      <div style="color:#94a3b8;margin-bottom:8px;">Saída simulada (${state.activeLang.toUpperCase()}):</div>
-      <pre style="white-space:pre-wrap;">${escaped}</pre>
-      <div style="margin-top:12px;padding:10px;background:#111827;border-radius:8px;color:#e2e8f0;">Execução validada sem erros de sintaxe.</div>
-    </body></html>`;
-    return;
-  }
-  frame.srcdoc = code;
-}
-
-function renderGamification() {
-  const level = Math.floor(state.xp / 200) + 1;
-  const titles = ['Iniciante', 'Explorador', 'Construtor', 'Full-Stack', 'Arquiteto'];
-  const role = titles[Math.min(level - 1, titles.length - 1)];
-  const currentLevelXp = state.xp % 200;
-  const pct = Math.min(100, Math.round((currentLevelXp / 200) * 100));
-
-  document.getElementById('userLevelTitle').textContent = `Nível ${level} • ${role}`;
-  document.getElementById('xpBarFill').style.width = `${Math.max(8, pct)}%`;
-  document.getElementById('xpCounterText').textContent = `${currentLevelXp} / 200 XP (Total: ${state.xp} XP)`;
-  document.getElementById('streakDays').textContent = `${state.streak} ${state.streak === 1 ? 'dia' : 'dias'}`;
-  document.getElementById('desktopStreakPill').textContent = `🔥 ${state.streak}d`;
-  document.getElementById('desktopXpPill').textContent = `${state.xp} XP`;
-
-  const days = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
-  const todayIdx = new Date().getDay();
-  document.getElementById('weekStreakRow').innerHTML = days
-    .map((d, i) => {
-      const active = i <= todayIdx && todayIdx - i < state.streak;
-      return `<div class="day-pill ${active ? 'is-done' : ''}">${d}</div>`;
-    })
-    .join('');
-
-  const filterContainer = document.getElementById('trailFilterChips');
-  const filters = [{ id: 'all', label: 'Todas' }, ...LANGUAGES.map((l) => ({ id: l.id, label: l.label }))];
-  filterContainer.innerHTML = filters
-    .map(
-      (f) =>
-        `<button type="button" class="lang-chip ${state.trailFilter === f.id ? 'is-active' : ''}" data-filter="${f.id}">${f.label}</button>`
-    )
-    .join('');
-
-  filterContainer.querySelectorAll('.lang-chip').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      state.trailFilter = btn.dataset.filter;
-      renderGamification();
-    });
-  });
-
-  const list = document.getElementById('trailList');
-  const items = LESSONS_AND_CHALLENGES.filter(
-    (item) => state.trailFilter === 'all' || item.lang === state.trailFilter
-  );
-
-  list.innerHTML = items
-    .map((item) => {
-      const done = state.completedIds.includes(item.id);
-      const realIdx = LESSONS_AND_CHALLENGES.findIndex((x) => x.id === item.id);
-      return `
-        <article class="trail-card ${done ? 'is-completed' : ''}">
-          <div class="trail-card-top">
-            <span class="badge-xp">${item.lang.toUpperCase()} • +${item.xp} XP</span>
-            <span class="status-pill ${done ? 'is-solved' : ''}">${done ? '✓ Concluído' : item.difficulty}</span>
-          </div>
-          <h3>${item.title}</h3>
-          <p>${item.desc}</p>
-          <button type="button" class="btn btn-primary" data-practice-idx="${realIdx}">Praticar no Editor</button>
-        </article>
+    const createBtn = () => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = `lang-item-btn ${isActive ? 'active' : ''}`;
+      btn.innerHTML = `
+        <span class="lang-icon-box" style="background:${lang.color}">${lang.badge}</span>
+        <div class="lang-item-info">
+          <strong>${lang.name}</strong>
+          <small>10 projetos • .${lang.ext}</small>
+        </div>
+        <span class="lang-prog-pill">${completedInLang}/10</span>
       `;
-    })
-    .join('');
+      btn.onclick = () => {
+        state.langId = lang.id;
+        state.projIdx = 0;
+        saveProgress();
+        renderAll();
+        if (state.isMobile) renderMobileProjectList();
+      };
+      return btn;
+    };
 
-  list.querySelectorAll('[data-practice-idx]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const idx = Number(btn.dataset.practiceIdx);
-      loadChallengeByIndex(idx, true);
-      setActiveTab('editor');
-    });
+    dtList.appendChild(createBtn());
+    mbGrid.appendChild(createBtn());
   });
-
-  const select = document.getElementById('promptSelect');
-  select.innerHTML = LESSONS_AND_CHALLENGES.map(
-    (item, idx) =>
-      `<option value="${idx}" ${idx === state.activeChallengeIdx ? 'selected' : ''}>${item.title} (+${item.xp} XP)</option>`
-  ).join('');
 }
 
-function loadChallengeByIndex(idx, overwriteEditor) {
-  state.activeChallengeIdx = idx % LESSONS_AND_CHALLENGES.length;
-  const challenge = LESSONS_AND_CHALLENGES[state.activeChallengeIdx];
-  const done = state.completedIds.includes(challenge.id);
-
-  document.getElementById('challengeDifficulty').textContent = `${challenge.difficulty} • +${challenge.xp} XP`;
-  document.getElementById('challengeTitle').textContent = challenge.title;
-  document.getElementById('challengeDesc').textContent = challenge.desc;
-  const badge = document.getElementById('challengeStatusBadge');
-  badge.textContent = done ? '✓ Concluído' : 'Pendente';
-  badge.classList.toggle('is-solved', done);
-
-  if (overwriteEditor) {
-    state.activeLang = challenge.lang;
-    state.savedCodes[challenge.lang] = challenge.template;
-    selectLanguage(challenge.lang);
-  }
-  renderGamification();
-  saveState();
+function renderProjectSelect() {
+  const lang = getActiveLang();
+  const sel = document.getElementById('dtProjectSelect');
+  sel.innerHTML = '';
+  lang.projects.forEach((p, idx) => {
+    const done = state.completed[`${lang.id}:${idx}`] ? '✓ ' : '';
+    const opt = document.createElement('option');
+    opt.value = idx;
+    opt.textContent = `${done}${p.t} (+${p.x} XP)`;
+    if (idx === state.projIdx) opt.selected = true;
+    sel.appendChild(opt);
+  });
 }
 
-function verifyActiveChallenge() {
-  const challenge = LESSONS_AND_CHALLENGES[state.activeChallengeIdx];
-  const code = document.getElementById('codeEditor').value;
-  if (!challenge.validate(code)) {
-    showToast('Ainda falta cumprir o requisito do desafio. Tente novamente!');
-    return;
-  }
+function renderMobileProjectList() {
+  const lang = getActiveLang();
+  document.getElementById('mbSelectedLangHeading').textContent = `Projetos de ${lang.name} (Toque para abrir)`;
+  const list = document.getElementById('mbProjectList');
+  list.innerHTML = '';
 
-  if (!state.completedIds.includes(challenge.id)) {
-    state.completedIds.push(challenge.id);
-    state.xp += challenge.xp;
-    if (navigator.vibrate) navigator.vibrate(30);
-    showToast(`Parabéns! +${challenge.xp} XP conquistados!`);
+  lang.projects.forEach((p, idx) => {
+    const done = state.completed[`${lang.id}:${idx}`];
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `mb-proj-item ${idx === state.projIdx ? 'active' : ''}`;
+    btn.innerHTML = `<span>${done ? '✅' : '▫️'} ${p.t}</span><strong>+${p.x} XP</strong>`;
+    btn.onclick = () => {
+      state.projIdx = idx;
+      saveProgress();
+      renderAll();
+      document.getElementById('catalogModal').hidden = true;
+    };
+    list.appendChild(btn);
+  });
+}
+
+/* =========================================================
+   5. EDITOR, NÚMEROS DE LINHA E DICIONÁRIO INSTANTÂNEO
+   ========================================================= */
+function syncLineNumbers(textarea, preEl) {
+  const lines = textarea.value.split('\n').length;
+  let nums = '';
+  for (let i = 1; i <= lines; i++) nums += i + '\n';
+  preEl.textContent = nums;
+  preEl.scrollTop = textarea.scrollTop;
+}
+
+function lookupWordAtCursor(textarea) {
+  const pos = textarea.selectionStart || 0;
+  const text = textarea.value;
+  const left = text.slice(0, pos).match(/[a-zA-Z0-9_]+$/);
+  const right = text.slice(pos).match(/^[a-zA-Z0-9_]+/);
+  const word = (left ? left[0] : '') + (right ? right[0] : '');
+  if (!word) return;
+
+  const meaning = DICT[word] || DICT[word.toUpperCase()] || DICT[word.toLowerCase()];
+  if (meaning) {
+    document.getElementById('dtDictToken').textContent = word;
+    document.getElementById('dtDictDesc').textContent = meaning;
+    document.getElementById('mbDictText').textContent = `${word}: ${meaning}`;
+  }
+}
+
+function extractCodeTokens(code) {
+  const bar = document.getElementById('dtTokenChips');
+  bar.innerHTML = '';
+  const words = Array.from(new Set(code.match(/[a-zA-Z_]{2,18}/g) || [])).slice(0, 14);
+  words.forEach(w => {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'token-chip';
+    chip.textContent = w;
+    chip.onclick = () => {
+      const meaning = DICT[w] || DICT[w.toUpperCase()] || `Identificador/comando "${w}" utilizado neste bloco de código.`;
+      document.getElementById('dtDictToken').textContent = w;
+      document.getElementById('dtDictDesc').textContent = meaning;
+    };
+    bar.appendChild(chip);
+  });
+}
+
+/* =========================================================
+   6. PREVIEW AO VIVO (WEB REAL + SIMULADOR INTERATIVO)
+   ========================================================= */
+function updateLivePreview(code) {
+  const lang = getActiveLang();
+  const proj = getActiveProject();
+  const isWebRenderable = ['html5', 'css3', 'javascript'].includes(lang.id);
+
+  let htmlDoc = '';
+  if (isWebRenderable) {
+    htmlDoc = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+      body { font-family: system-ui, sans-serif; background: #0f172a; color: #f8fafc; padding: 14px; margin: 0; }
+      button { cursor: pointer; }
+    </style></head><body>${code}</body></html>`;
   } else {
-    showToast('Desafio validado com sucesso!');
+    const escaped = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const linesCount = code.trim().split('\n').length;
+    htmlDoc = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+      body { font-family: system-ui, sans-serif; background: #090e1a; color: #e2e8f0; padding: 14px; margin: 0; }
+      .sim-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+      .sim-badge { background:#10b981; color:#052e16; font-weight:800; font-size:11px; padding:3px 8px; border-radius:6px; }
+      .sim-card { background:#11192c; border:1px solid #1e2d4a; border-radius:10px; padding:12px; }
+      pre { font-family: monospace; font-size: 12px; color: #7dd3fc; white-space: pre-wrap; margin: 8px 0 0; }
+    </style></head><body>
+      <div class="sim-head">
+        <strong style="font-size:13px">${proj.t}</strong>
+        <span class="sim-badge">SIMULADOR ${lang.name.toUpperCase()}</span>
+      </div>
+      <div class="sim-card">
+        <div style="font-size:12px;color:#94a3b8">Ambiente isolado pronto • ${linesCount} linha(s) analisada(s)</div>
+        <pre>${escaped}</pre>
+      </div>
+    </body></html>`;
   }
 
-  saveState();
-  renderGamification();
-  loadChallengeByIndex(state.activeChallengeIdx, false);
+  document.getElementById('dtPreviewFrame').srcdoc = htmlDoc;
+  document.getElementById('mbPreviewFrame').srcdoc = htmlDoc;
 }
 
-function inspectWordAtCursor() {
-  const editor = document.getElementById('codeEditor');
-  const pos = editor.selectionStart || 0;
-  const text = editor.value;
-  const left = text.slice(0, pos).search(/[a-zA-Z0-9_-]+$/);
-  const rightMatch = text.slice(pos).match(/^[a-zA-Z0-9_-]+/);
-  const word = (left >= 0 ? text.slice(left, pos) : '') + (rightMatch ? rightMatch[0] : '');
-  const key = word.toLowerCase();
-  const entry = KEYWORD_DICTIONARY[key];
+/* =========================================================
+   7. VALIDADOR RIGOROSO ANTI-TRAPAÇA DE XP
+   ========================================================= */
+function stripComments(code) {
+  return code
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/\/\/.*$/gm, '')
+    .replace(/#.*$/gm, '');
+}
 
-  if (!entry) {
-    showToast(word ? `Sem definição rápida para "${word}". Pergunte à MissIA!` : 'Toque em uma palavra-chave no código primeiro.');
+function verifyChallengeSolution() {
+  const lang = getActiveLang();
+  const proj = getActiveProject();
+  const key = projectKey();
+  const userRaw = getActiveEditor().value;
+
+  const normUser = userRaw.replace(/\s+/g, ' ').trim();
+  const normStarter = proj.s.replace(/\s+/g, ' ').trim();
+
+  // Regra 1: Impedir XP sem alterar o código inicial
+  if (normUser === normStarter || normUser.length < 10) {
+    triggerHaptic('light');
+    showToast('⚠️ Você ainda não alterou o código inicial. Implemente a solução primeiro!');
+    if (state.isMobile) switchMobileTab('challenge');
     return;
   }
 
-  document.getElementById('sheetLangBadge').textContent = entry.lang;
-  document.getElementById('sheetTermTitle').textContent = word;
-  document.getElementById('sheetTermDesc').textContent = entry.desc;
-  document.getElementById('sheetTermExample').textContent = entry.example;
-  state.currentSheetExample = entry.example;
+  // Regra 2: Remover comentários para impedir trapaça colando palavras comentadas
+  const cleanUser = stripComments(userRaw);
+  const cleanStarter = stripComments(proj.s);
 
-  document.getElementById('keywordBackdrop').hidden = false;
-  const sheet = document.getElementById('keywordSheet');
-  sheet.classList.add('is-open');
-  sheet.setAttribute('aria-hidden', 'false');
-}
+  // Regra 3: Verificar cada requisito técnico do desafio
+  const missing = [];
+  for (const token of proj.r) {
+    const countInStarter = cleanStarter.split(token).length - 1;
+    const countInUser = cleanUser.split(token).length - 1;
+    if (countInUser === 0 || (countInStarter > 0 && countInUser <= countInStarter)) {
+      missing.push(token);
+    }
+  }
 
-function closeKeywordSheet() {
-  document.getElementById('keywordBackdrop').hidden = true;
-  const sheet = document.getElementById('keywordSheet');
-  sheet.classList.remove('is-open');
-  sheet.setAttribute('aria-hidden', 'true');
-}
-
-function appendChatMessage(text, isUser) {
-  const box = document.getElementById('chatMessages');
-  const div = document.createElement('div');
-  div.className = `chat-bubble ${isUser ? 'is-user' : 'is-ai'}`;
-  div.textContent = text;
-  box.appendChild(div);
-  box.scrollTop = box.scrollHeight;
-}
-
-async function sendMissiaMessage(promptText) {
-  const trimmed = promptText.trim();
-  if (!trimmed) return;
-  appendChatMessage(trimmed, true);
-
-  const codeContext = document.getElementById('codeEditor').value;
-  const challenge = LESSONS_AND_CHALLENGES[state.activeChallengeIdx];
-
-  if (!APP_CONFIG.proxyUrl) {
-    const localHint = `Analisei seu arquivo (${state.activeLang.toUpperCase()}):\n• Desafio atual: ${challenge.title}\n• Dica: ${challenge.desc}\n• Seu código tem ${codeContext.split('\n').length} linhas. Configure APP_CONFIG.proxyUrl para respostas completas em nuvem.`;
-    setTimeout(() => appendChatMessage(localHint, false), 250);
+  if (missing.length > 0) {
+    triggerHaptic('light');
+    showToast(`❌ Faltou implementar: ${missing.join(', ')}`);
+    if (state.isMobile) switchMobileTab('challenge');
     return;
   }
+
+  // Regra 4: Verificar balanceamento básico de chaves/parênteses
+  const openBraces = (cleanUser.match(/\{/g) || []).length;
+  const closeBraces = (cleanUser.match(/\}/g) || []).length;
+  if (openBraces !== closeBraces) {
+    showToast('⚠️ Erro de sintaxe: verifique as chaves { } abertas e fechadas.');
+    return;
+  }
+
+  // Sucesso real!
+  state.savedCode[key] = userRaw;
+  if (!state.completed[key]) {
+    state.completed[key] = true;
+    state.xp += proj.x;
+    triggerHaptic('heavy');
+    showToast(`🎉 Desafio aprovado! +${proj.x} XP conquistados!`);
+  } else {
+    triggerHaptic('light');
+    showToast('✅ Solução validada novamente (XP já contabilizado neste projeto).');
+  }
+
+  saveProgress();
+  renderAll();
+}
+
+/* =========================================================
+   8. CHAT MISSIA (PROXY VERCEL SEGURO)
+   ========================================================= */
+async function askMissIA(question, feedEl, inputEl) {
+  const lang = getActiveLang();
+  const proj = getActiveProject();
+  const code = getActiveEditor().value;
+
+  const userBubble = document.createElement('div');
+  userBubble.className = 'ai-msg user';
+  userBubble.textContent = question;
+  feedEl.appendChild(userBubble);
+  inputEl.value = '';
+  feedEl.scrollTop = feedEl.scrollHeight;
+
+  const botBubble = document.createElement('div');
+  botBubble.className = 'ai-msg bot';
+  botBubble.textContent = 'Analisando seu código...';
+  feedEl.appendChild(botBubble);
 
   try {
-    const headers = { 'Content-Type': 'application/json' };
-    if (firebaseAuth && firebaseAuth.currentUser) {
-      const token = await firebaseAuth.currentUser.getIdToken();
-      headers.Authorization = `Bearer ${token}`;
-    }
+    const prompt = `Você é a MissIA, tutora de programação do app MissCode. Responda em português de forma direta, didática e sem entregar a resposta inteira pronta de mão beijada.\nLinguagem: ${lang.name}\nDesafio: ${proj.t} - ${proj.p}\nCódigo atual do aluno:\n${code}\n\nPergunta do aluno: ${question}`;
     const res = await fetch(APP_CONFIG.proxyUrl, {
       method: 'POST',
-      headers,
-      body: JSON.stringify({ prompt: trimmed, context: codeContext })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt })
     });
     const data = await res.json();
-    appendChatMessage(data.reply || 'Sem resposta do servidor.', false);
-  } catch {
-    appendChatMessage('Erro de conexão com o proxy da MissIA.', false);
+    botBubble.textContent = data.reply || data.text || data.response || 'Não consegui analisar agora. Tente novamente.';
+  } catch (err) {
+    botBubble.textContent = 'Sem conexão com a MissIA no momento. Verifique sua internet.';
   }
+  feedEl.scrollTop = feedEl.scrollHeight;
 }
 
+/* =========================================================
+   9. FIREBASE AUTHENTICATION
+   ========================================================= */
 function initFirebase() {
-  if (!window.firebase || !APP_CONFIG.firebaseConfig.apiKey) {
-    document.getElementById('authSyncInfo').textContent =
-      'Modo Local ativo. Adicione firebaseConfig em app.js para sincronizar na nuvem.';
-    return;
-  }
+  try {
+    if (!window.firebase || !APP_CONFIG.firebaseConfig.apiKey) return;
+    if (!firebase.apps.length) firebase.initializeApp(APP_CONFIG.firebaseConfig);
+    fbAuth = firebase.auth();
 
-  if (!firebase.apps.length) {
-    firebase.initializeApp(APP_CONFIG.firebaseConfig);
-  }
-  firebaseAuth = firebase.auth();
-
-  firebaseAuth.onAuthStateChanged((user) => {
-    state.user = user
-      ? {
-          uid: user.uid,
-          label: user.displayName || user.email || user.phoneNumber || 'Aluno'
-        }
-      : null;
-
-    const btnAuth = document.getElementById('btnAuth');
-    const loggedBox = document.getElementById('authLoggedBox');
-    const guestBox = document.getElementById('authGuestBox');
-
-    if (state.user) {
-      btnAuth.textContent = state.user.label.slice(0, 12);
-      loggedBox.hidden = false;
-      guestBox.hidden = true;
-      document.getElementById('authUserInfo').textContent = `Conectado como ${state.user.label}`;
-      document.getElementById('authSyncInfo').textContent = `Progresso sincronizado (${state.xp} XP)`;
-    } else {
-      btnAuth.textContent = 'Entrar';
-      loggedBox.hidden = true;
-      guestBox.hidden = false;
-    }
-    saveState();
-  });
-}
-
-function setAuthFeedback(msg) {
-  document.getElementById('authFeedback').textContent = msg;
-}
-
-function setupAuthHandlers() {
-  document.getElementById('tabAuthEmail').addEventListener('click', () => {
-    document.getElementById('tabAuthEmail').classList.add('active');
-    document.getElementById('tabAuthPhone').classList.remove('active');
-    document.getElementById('emailAuthForm').hidden = false;
-    document.getElementById('phoneAuthForm').hidden = true;
-  });
-
-  document.getElementById('tabAuthPhone').addEventListener('click', () => {
-    document.getElementById('tabAuthPhone').classList.add('active');
-    document.getElementById('tabAuthEmail').classList.remove('active');
-    document.getElementById('phoneAuthForm').hidden = false;
-    document.getElementById('emailAuthForm').hidden = true;
-  });
-
-  document.getElementById('emailAuthForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('authEmail').value.trim();
-    const password = document.getElementById('authPassword').value;
-    if (!firebaseAuth) {
-      state.user = { uid: 'local_user', label: email.split('@')[0] };
-      document.getElementById('btnAuth').textContent = state.user.label;
-      document.getElementById('authModal').hidden = true;
-      showToast('Sessão local iniciada!');
-      return;
-    }
-    try {
-      await firebaseAuth.signInWithEmailAndPassword(email, password);
-      document.getElementById('authModal').hidden = true;
-      showToast('Login realizado!');
-    } catch (err) {
-      setAuthFeedback(err.message);
-    }
-  });
-
-  document.getElementById('btnEmailSignUp').addEventListener('click', async () => {
-    const email = document.getElementById('authEmail').value.trim();
-    const password = document.getElementById('authPassword').value;
-    if (!firebaseAuth) {
-      showToast('Configure o firebaseConfig em app.js para cadastro em nuvem.');
-      return;
-    }
-    try {
-      await firebaseAuth.createUserWithEmailAndPassword(email, password);
-      document.getElementById('authModal').hidden = true;
-      showToast('Conta criada com sucesso!');
-    } catch (err) {
-      setAuthFeedback(err.message);
-    }
-  });
-
-  document.getElementById('btnSendSms').addEventListener('click', async () => {
-    const phone = document.getElementById('authPhone').value.trim();
-    if (!firebaseAuth) {
-      setAuthFeedback('Configure o firebaseConfig em app.js para ativar SMS.');
-      return;
-    }
-    try {
-      if (!recaptchaVerifier) {
-        recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-          size: 'invisible'
-        });
-      }
-      state.confirmationResult = await firebaseAuth.signInWithPhoneNumber(phone, recaptchaVerifier);
-      document.getElementById('otpVerifyBox').hidden = false;
-      setAuthFeedback('Código SMS enviado!');
-    } catch (err) {
-      setAuthFeedback(err.message);
-    }
-  });
-
-  document.getElementById('btnVerifyOtp').addEventListener('click', async () => {
-    const code = document.getElementById('authOtp').value.trim();
-    if (!state.confirmationResult) return;
-    try {
-      await state.confirmationResult.confirm(code);
-      document.getElementById('authModal').hidden = true;
-      showToast('Telefone verificado!');
-    } catch (err) {
-      setAuthFeedback(err.message);
-    }
-  });
-
-  document.getElementById('btnAppleLogin').addEventListener('click', async () => {
-    if (!firebaseAuth) {
-      setAuthFeedback('Configure o firebaseConfig e Apple Service ID para entrar com Apple.');
-      return;
-    }
-    try {
-      const provider = new firebase.auth.OAuthProvider('apple.com');
-      provider.addScope('email');
-      provider.addScope('name');
-      if (isMobileScreen()) {
-        await firebaseAuth.signInWithRedirect(provider);
+    fbAuth.onAuthStateChanged(user => {
+      state.user = user || null;
+      loadProgress();
+      renderAll();
+      const loggedBox = document.getElementById('authLoggedBox');
+      const guestBox = document.getElementById('authGuestBox');
+      if (user) {
+        loggedBox.hidden = false;
+        guestBox.hidden = true;
+        document.getElementById('authUserInfo').textContent = `Conectado como: ${user.email || user.phoneNumber || user.uid}`;
+        document.getElementById('dtBtnAuth').textContent = 'Conta ✓';
       } else {
-        await firebaseAuth.signInWithPopup(provider);
-        document.getElementById('authModal').hidden = true;
-        showToast('Conectado com Apple ID!');
+        loggedBox.hidden = true;
+        guestBox.hidden = false;
+        document.getElementById('dtBtnAuth').textContent = 'Entrar';
       }
-    } catch (err) {
-      setAuthFeedback(err.message);
-    }
-  });
-
-  document.getElementById('btnLogout').addEventListener('click', async () => {
-    if (firebaseAuth) {
-      await firebaseAuth.signOut();
-    }
-    state.user = null;
-    document.getElementById('btnAuth').textContent = 'Entrar';
-    document.getElementById('authModal').hidden = true;
-    showToast('Você saiu da conta.');
-  });
+    });
+  } catch (_) {}
 }
 
-function downloadFile(filename, content, mime) {
-  const blob = new Blob([content], { type: mime });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
+/* =========================================================
+   10. EVENTOS E TECLADO INTELIGENTE MOBILE (OPÇÃO C)
+   ========================================================= */
+function switchMobileTab(tabName) {
+  document.querySelectorAll('.mb-tab').forEach(b => b.classList.toggle('active', b.dataset.mbtab === tabName));
+  document.querySelectorAll('.mb-pane').forEach(p => p.classList.remove('active'));
+  const map = { preview: 'mbPanePreview', challenge: 'mbPaneChallenge', ai: 'mbPaneAi', tools: 'mbPaneTools' };
+  const target = document.getElementById(map[tabName]);
+  if (target) target.classList.add('active');
+}
+
+function setupMobileKeyboardDetection() {
+  const shell = document.getElementById('mobileApp');
+  const mbEditor = document.getElementById('mbCodeEditor');
+  let baseHeight = window.innerHeight;
+
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', () => {
+      const isKbOpen = window.visualViewport.height < baseHeight * 0.78;
+      shell.classList.toggle('keyboard-open', isKbOpen);
+    });
+  }
+
+  mbEditor.addEventListener('focus', () => shell.classList.add('keyboard-open'));
+  mbEditor.addEventListener('blur', () => setTimeout(() => shell.classList.remove('keyboard-open'), 150));
 }
 
 function bindEvents() {
-  document.querySelectorAll('.nav-tab').forEach((btn) => {
-    btn.addEventListener('click', () => setActiveTab(btn.dataset.tab));
-  });
+  window.addEventListener('resize', detectEnvironment);
 
-  document.getElementById('promptSelect').addEventListener('change', (e) => {
-    loadChallengeByIndex(Number(e.target.value), true);
-  });
+  // Sincronização entre editores Desktop e Mobile
+  const dtEd = document.getElementById('dtCodeEditor');
+  const mbEd = document.getElementById('mbCodeEditor');
 
-  const editor = document.getElementById('codeEditor');
-  editor.addEventListener('input', () => {
-    state.savedCodes[state.activeLang] = editor.value;
-    saveState();
-    if (!isMobileScreen()) {
-      clearTimeout(editor._previewTimer);
-      editor._previewTimer = setTimeout(renderPreview, 350);
+  const handleCodeInput = (source, target, lineEl) => {
+    const val = source.value;
+    target.value = val;
+    state.savedCode[projectKey()] = val;
+    syncLineNumbers(source, lineEl);
+    extractCodeTokens(val);
+    clearTimeout(source._prevTimer);
+    source._prevTimer = setTimeout(() => updateLivePreview(val), 350);
+  };
+
+  dtEd.addEventListener('input', () => handleCodeInput(dtEd, mbEd, document.getElementById('dtLineNumbers')));
+  mbEd.addEventListener('input', () => handleCodeInput(mbEd, dtEd, document.getElementById('mbLineNumbers')));
+
+  dtEd.addEventListener('scroll', () => { document.getElementById('dtLineNumbers').scrollTop = dtEd.scrollTop; });
+  mbEd.addEventListener('scroll', () => { document.getElementById('mbLineNumbers').scrollTop = mbEd.scrollTop; });
+
+  dtEd.addEventListener('click', () => lookupWordAtCursor(dtEd));
+  dtEd.addEventListener('keyup', () => lookupWordAtCursor(dtEd));
+  mbEd.addEventListener('click', () => lookupWordAtCursor(mbEd));
+  mbEd.addEventListener('keyup', () => lookupWordAtCursor(mbEd));
+
+  // Suporte à tecla Tab no Desktop
+  dtEd.addEventListener('keydown', e => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const s = dtEd.selectionStart;
+      dtEd.value = dtEd.value.substring(0, s) + '  ' + dtEd.value.substring(dtEd.selectionEnd);
+      dtEd.selectionStart = dtEd.selectionEnd = s + 2;
+      handleCodeInput(dtEd, mbEd, document.getElementById('dtLineNumbers'));
     }
   });
 
-  editor.addEventListener('dblclick', inspectWordAtCursor);
-  document.getElementById('btnInspectWord').addEventListener('click', inspectWordAtCursor);
-
-  document.getElementById('btnCloseSheet').addEventListener('click', closeKeywordSheet);
-  document.getElementById('keywordBackdrop').addEventListener('click', closeKeywordSheet);
-  document.getElementById('btnInsertSnippet').addEventListener('click', () => {
-    insertAtCursor(`\n${state.currentSheetExample}\n`);
-    closeKeywordSheet();
+  // Barra de símbolos no Mobile
+  document.querySelectorAll('#mbSymbolBar button[data-ins]').forEach(btn => {
+    btn.addEventListener('mousedown', e => {
+      e.preventDefault();
+      const ins = btn.dataset.ins;
+      const s = mbEd.selectionStart;
+      mbEd.value = mbEd.value.substring(0, s) + ins + mbEd.value.substring(mbEd.selectionEnd);
+      mbEd.selectionStart = mbEd.selectionEnd = s + ins.length;
+      handleCodeInput(mbEd, dtEd, document.getElementById('mbLineNumbers'));
+    });
   });
 
-  document.getElementById('btnRunPreview').addEventListener('click', () => {
-    renderPreview();
-    if (isMobileScreen()) {
-      setActiveTab('preview');
-    }
-  });
-
-  document.getElementById('btnRefreshPreview').addEventListener('click', renderPreview);
-
-  document.getElementById('btnResetCode').addEventListener('click', () => {
-    const langObj = LANGUAGES.find((l) => l.id === state.activeLang) || LANGUAGES[0];
-    editor.value = langObj.starter;
-    state.savedCodes[state.activeLang] = editor.value;
-    saveState();
-    renderPreview();
-    showToast('Código restaurado.');
-  });
-
-  document.getElementById('btnViewportDesktop').addEventListener('click', () => {
-    document.getElementById('btnViewportDesktop').classList.add('active');
-    document.getElementById('btnViewportMobile').classList.remove('active');
-    document.getElementById('previewStage').classList.remove('is-phone-sim');
-  });
-
-  document.getElementById('btnViewportMobile').addEventListener('click', () => {
-    document.getElementById('btnViewportMobile').classList.add('active');
-    document.getElementById('btnViewportDesktop').classList.remove('active');
-    document.getElementById('previewStage').classList.add('is-phone-sim');
-  });
-
-  document.getElementById('btnLoadChallenge').addEventListener('click', () => {
-    loadChallengeByIndex(state.activeChallengeIdx, true);
-    setActiveTab('editor');
-    showToast('Desafio carregado no editor.');
-  });
-
-  document.getElementById('btnVerifyChallenge').addEventListener('click', verifyActiveChallenge);
-  document.getElementById('btnNextChallenge').addEventListener('click', () => {
-    loadChallengeByIndex(state.activeChallengeIdx + 1, true);
-  });
-
-  const handleSave = () => {
-    state.savedCodes[state.activeLang] = editor.value;
-    saveState();
-    showToast('Progresso salvo!');
-  };
-
-  const handleDownloadHtml = () => {
-    downloadFile('misscode-projeto.html', editor.value, 'text/html');
-  };
-
-  const handleExportJson = () => {
-    downloadFile('misscode-backup.json', JSON.stringify(state, null, 2), 'application/json');
-  };
-
-  const handleToggleLocale = () => {
-    state.locale = state.locale === 'PT' ? 'EN' : 'PT';
-    document.getElementById('btnLocaleDesktop').textContent = state.locale;
-    saveState();
-    showToast(`Idioma alterado para ${state.locale}`);
-  };
-
-  document.getElementById('btnSaveDesktop').addEventListener('click', handleSave);
-  document.getElementById('btnSaveMobile').addEventListener('click', () => {
-    handleSave();
-    document.getElementById('morePopover').hidden = true;
-  });
-
-  document.getElementById('btnDownloadDesktop').addEventListener('click', handleDownloadHtml);
-  document.getElementById('btnDownloadMobile').addEventListener('click', () => {
-    handleDownloadHtml();
-    document.getElementById('morePopover').hidden = true;
-  });
-
-  document.getElementById('btnExportDesktop').addEventListener('click', handleExportJson);
-  document.getElementById('btnExportMobile').addEventListener('click', () => {
-    handleExportJson();
-    document.getElementById('morePopover').hidden = true;
-  });
-
-  document.getElementById('btnLocaleDesktop').addEventListener('click', handleToggleLocale);
-  document.getElementById('btnLocaleMobile').addEventListener('click', () => {
-    handleToggleLocale();
-    document.getElementById('morePopover').hidden = true;
-  });
-
-  const moreBtn = document.getElementById('btnMoreMenu');
-  const morePopover = document.getElementById('morePopover');
-  moreBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    morePopover.hidden = !morePopover.hidden;
-  });
-  document.addEventListener('click', (e) => {
-    if (!morePopover.hidden && !morePopover.contains(e.target) && e.target !== moreBtn) {
-      morePopover.hidden = true;
-    }
-  });
-
-  const openMissia = () => {
-    morePopover.hidden = true;
-    document.getElementById('missiaModal').hidden = false;
-    const box = document.getElementById('chatMessages');
-    if (!box.children.length) {
-      appendChatMessage('Olá! Sou a MissIA. Em que posso ajudar no seu código hoje?', false);
-    }
-  };
-
-  document.getElementById('btnMissiaFab').addEventListener('click', openMissia);
-  document.getElementById('btnMissiaMobileTop').addEventListener('click', openMissia);
-  document.getElementById('btnCloseMissia').addEventListener('click', () => {
-    document.getElementById('missiaModal').hidden = true;
-  });
-
-  document.querySelectorAll('[data-quick]').forEach((btn) => {
-    btn.addEventListener('click', () => sendMissiaMessage(btn.dataset.quick));
-  });
-
-  document.getElementById('chatForm').addEventListener('submit', (e) => {
+  document.getElementById('mbRunCodeBtn').addEventListener('mousedown', e => {
     e.preventDefault();
-    const input = document.getElementById('chatInput');
-    sendMissiaMessage(input.value);
-    input.value = '';
+    mbEd.blur();
+    updateLivePreview(mbEd.value);
+    switchMobileTab('preview');
+    showToast('▶️ Preview atualizado!');
   });
 
-  document.getElementById('btnAuth').addEventListener('click', () => {
-    document.getElementById('authModal').hidden = false;
+  // Seletor de projeto Desktop
+  document.getElementById('dtProjectSelect').addEventListener('change', e => {
+    state.projIdx = Number(e.target.value);
+    saveProgress();
+    renderAll();
   });
-  document.getElementById('btnCloseAuth').addEventListener('click', () => {
-    document.getElementById('authModal').hidden = true;
+
+  // Frame PC / Celular no Desktop
+  document.getElementById('dtFramePc').onclick = () => {
+    document.getElementById('dtDeviceFrame').className = 'device-frame pc-mode';
+    document.getElementById('dtFramePc').classList.add('active');
+    document.getElementById('dtFrameMobile').classList.remove('active');
+  };
+  document.getElementById('dtFrameMobile').onclick = () => {
+    document.getElementById('dtDeviceFrame').className = 'device-frame mobile-mode';
+    document.getElementById('dtFrameMobile').classList.add('active');
+    document.getElementById('dtFramePc').classList.remove('active');
+  };
+  document.getElementById('dtBtnRefresh').onclick = () => {
+    updateLivePreview(dtEd.value);
+    showToast('🔄 Preview atualizado');
+  };
+
+  // Botões de Ação (Resetar, Verificar XP, Próximo, Salvar, Baixar)
+  const resetProject = () => {
+    const proj = getActiveProject();
+    delete state.savedCode[projectKey()];
+    saveProgress();
+    renderAll();
+    showToast('↩️ Código inicial restaurado.');
+  };
+  document.getElementById('dtBtnReset').onclick = resetProject;
+  document.getElementById('mbBtnReset').onclick = resetProject;
+
+  document.getElementById('dtBtnVerify').onclick = verifyChallengeSolution;
+  document.getElementById('mbBtnVerify').onclick = verifyChallengeSolution;
+
+  const nextProject = () => {
+    const lang = getActiveLang();
+    state.projIdx = (state.projIdx + 1) % lang.projects.length;
+    saveProgress();
+    renderAll();
+  };
+  document.getElementById('dtBtnNext').onclick = nextProject;
+  document.getElementById('mbBtnNext').onclick = nextProject;
+
+  const manualSave = () => {
+    state.savedCode[projectKey()] = getActiveEditor().value;
+    saveProgress();
+    showToast('💾 Progresso salvo com sucesso!');
+  };
+  document.getElementById('dtBtnSave').onclick = manualSave;
+  document.getElementById('mbBtnSave').onclick = manualSave;
+
+  const downloadCode = () => {
+    const lang = getActiveLang();
+    const blob = new Blob([getActiveEditor().value], { type: 'text/plain;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `misscode_${lang.id}_p${state.projIdx + 1}.${lang.ext}`;
+    a.click();
+  };
+  document.getElementById('dtBtnDownload').onclick = downloadCode;
+  document.getElementById('mbBtnDownload').onclick = downloadCode;
+
+  document.getElementById('dtBtnExport').onclick = () => {
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'misscode_backup.json';
+    a.click();
+  };
+
+  // Abas Mobile Split-Screen
+  document.querySelectorAll('.mb-tab').forEach(btn => {
+    btn.onclick = () => switchMobileTab(btn.dataset.mbtab);
   });
+
+  // Modais
+  document.getElementById('mbOpenCatalogBtn').onclick = () => {
+    renderLanguageLists();
+    renderMobileProjectList();
+    document.getElementById('catalogModal').hidden = false;
+  };
+  document.getElementById('dtFabAi').onclick = () => { document.getElementById('aiModal').hidden = false; };
+  document.getElementById('dtBtnSchedule').onclick = () => { document.getElementById('scheduleModal').hidden = false; };
+  document.getElementById('mbBtnSchedule').onclick = () => { document.getElementById('scheduleModal').hidden = false; };
+  document.getElementById('dtBtnAuth').onclick = () => { document.getElementById('authModal').hidden = false; };
+  document.getElementById('mbAuthBtn').onclick = () => { document.getElementById('authModal').hidden = false; };
+
+  document.querySelectorAll('.close-modal').forEach(btn => {
+    btn.onclick = () => { document.getElementById(btn.dataset.close).hidden = true; };
+  });
+
+  // Formulários MissIA
+  document.getElementById('dtAiForm').onsubmit = e => {
+    e.preventDefault();
+    const inp = document.getElementById('dtAiInput');
+    if (inp.value.trim()) askMissIA(inp.value.trim(), document.getElementById('dtAiMessages'), inp);
+  };
+  document.getElementById('mbAiForm').onsubmit = e => {
+    e.preventDefault();
+    const inp = document.getElementById('mbAiInput');
+    if (inp.value.trim()) askMissIA(inp.value.trim(), document.getElementById('mbAiMessages'), inp);
+  };
+
+  // Autenticação Firebase
+  const feedback = document.getElementById('authFeedback');
+  document.getElementById('emailAuthForm').onsubmit = async e => {
+    e.preventDefault();
+    if (!fbAuth) return;
+    try {
+      await fbAuth.signInWithEmailAndPassword(
+        document.getElementById('authEmail').value,
+        document.getElementById('authPassword').value
+      );
+      document.getElementById('authModal').hidden = true;
+      showToast('✅ Login realizado!');
+    } catch (err) { feedback.textContent = err.message; }
+  };
+
+  document.getElementById('btnRegisterEmail').onclick = async () => {
+    if (!fbAuth) return;
+    try {
+      await fbAuth.createUserWithEmailAndPassword(
+        document.getElementById('authEmail').value,
+        document.getElementById('authPassword').value
+      );
+      document.getElementById('authModal').hidden = true;
+      showToast('🎉 Conta criada!');
+    } catch (err) { feedback.textContent = err.message; }
+  };
+
+  document.getElementById('btnSendSms').onclick = async () => {
+    if (!fbAuth) return;
+    try {
+      if (!recaptchaVerifier) {
+        recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { size: 'invisible' });
+      }
+      confirmationResult = await fbAuth.signInWithPhoneNumber(document.getElementById('authPhone').value, recaptchaVerifier);
+      document.getElementById('otpVerifyBox').hidden = false;
+      feedback.textContent = 'Código SMS enviado!';
+    } catch (err) { feedback.textContent = err.message; }
+  };
+
+  document.getElementById('btnVerifyOtp').onclick = async () => {
+    if (!confirmationResult) return;
+    try {
+      await confirmationResult.confirm(document.getElementById('authOtp').value);
+      document.getElementById('authModal').hidden = true;
+      showToast('✅ Telefone verificado!');
+    } catch (err) { feedback.textContent = err.message; }
+  };
+
+  document.getElementById('btnGoogleLogin').onclick = async () => {
+    if (!fbAuth) return;
+    try {
+      await fbAuth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+      document.getElementById('authModal').hidden = true;
+    } catch (err) { feedback.textContent = err.message; }
+  };
+
+  document.getElementById('btnAppleLogin').onclick = async () => {
+    if (!fbAuth) return;
+    try {
+      await fbAuth.signInWithPopup(new firebase.auth.OAuthProvider('apple.com'));
+      document.getElementById('authModal').hidden = true;
+    } catch (err) { feedback.textContent = err.message; }
+  };
+
+  document.getElementById('btnLogout').onclick = async () => {
+    if (fbAuth) await fbAuth.signOut();
+    showToast('Sessão encerrada.');
+  };
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  loadState();
-  setupViewportAdaptation();
-  initFirebase();
-  setupAuthHandlers();
+  detectEnvironment();
+  loadProgress();
   bindEvents();
-  selectLanguage(state.activeLang);
-  loadChallengeByIndex(state.activeChallengeIdx, false);
-  setActiveTab('editor');
-  renderPreview();
+  setupMobileKeyboardDetection();
+  renderAll();
+  initFirebase();
 });
